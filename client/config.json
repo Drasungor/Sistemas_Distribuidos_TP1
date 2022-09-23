@@ -1,0 +1,49 @@
+{
+    "paths": [
+        {
+            "category": "BR_category_id.json",
+            "trending": "BR_youtube_trending_data.json"
+        },
+        {
+            "category": "CA_category_id.json",
+            "trending": "CA_youtube_trending_data.json"
+        },
+        {
+            "category": "DE_category_id.json",
+            "trending": "DE_youtube_trending_data.json"
+        },
+        {
+            "category": "FR_category_id.json",
+            "trending": "FR_youtube_trending_data.json"
+        },
+        {
+            "category": "GB_category_id.json",
+            "trending": "GB_youtube_trending_data.json"
+        },
+        {
+            "category": "IN_category_id.json",
+            "trending": "IN_youtube_trending_data.json"
+        },
+        {
+            "category": "JP_category_id.json",
+            "trending": "JP_youtube_trending_data.json"
+        },
+        {
+            "category": "KR_category_id.json",
+            "trending": "KR_youtube_trending_data.json"
+        },
+        {
+            "category": "MX_category_id.json",
+            "trending": "MX_youtube_trending_data.json"
+        },
+        {
+            "category": "RU_category_id.json",
+            "trending": "RU_youtube_trending_data.json"
+        },
+        {
+            "category": "US_category_id.json",
+            "trending": "US_youtube_trending_data.json"
+        }
+        
+    ]
+}
