@@ -1,6 +1,7 @@
 {
     "processes_amount": 3,
-    "accepter_address": "",
+    "accepter_address": "accepter",
+    "accepter_port": "8080",
     "files_names": [
         {
             "category": "BR_category_id.json",

@@ -20,4 +20,4 @@ services:
       - ./server/config.json:/app/config.json
     expose:
       - "8080"
-    command: python main.py
+    command: python /app/main.py
