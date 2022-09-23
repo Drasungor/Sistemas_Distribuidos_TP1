@@ -1,5 +1,7 @@
 {
-    "paths": [
+    "processes_amount": 3,
+    "accepter_address": "",
+    "files_names": [
         {
             "category": "BR_category_id.json",
             "trending": "BR_youtube_trending_data.json"
@@ -44,6 +46,5 @@
             "category": "US_category_id.json",
             "trending": "US_youtube_trending_data.json"
         }
-        
     ]
 }
