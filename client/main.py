@@ -1,9 +1,8 @@
 import csv
 import socket
-import signal
 import multiprocessing as mp
-import queue
 import json
+import signal
 
 
 config_file_path = "config.json"
@@ -19,6 +18,11 @@ def send_string(skt: socket, data: str):
 
 def send_number(skt: socket, number: int):
     skt.sendall(number.to_bytes(4, "big"))
+
+def send_connection_data(skt: socket, connections_amount: int, files_amount: int):
+    data_dict = { "connections_amount": connections_amount, "files_amount": files_amount }
+    send_string(skt, json.dumps(data_dict))
+
 
 def send_cached_data(skt: socket, data, file_finished: bool):
     dict = { "data": json.dumps(data), "file_finished": file_finished }
@@ -79,15 +83,19 @@ def main():
     connection_port = config["accepter_port"]
     main_process_connection_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     main_process_connection_socket.connect((connection_address, connection_port))
-    send_number(main_process_connection_socket, len(files_paths))
 
+    # send_number(main_process_connection_socket, len(files_paths))
+    send_connection_data(main_process_connection_socket, len(child_processes), len(files_paths))
+    
     for paths in files_paths:
         files_paths_queue.put(paths)
     for _ in range(len(child_processes)):
         files_paths_queue.put(None)
+    files_paths_queue.close()
 
     # TODO: WAIT FOR QUERY RESPONSE
 
+    files_paths_queue.join_thread()
     for process in child_processes:
         process.join()
 
