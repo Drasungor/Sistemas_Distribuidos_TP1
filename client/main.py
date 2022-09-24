@@ -5,6 +5,7 @@ import multiprocessing as mp
 import queue
 import json
 
+
 config_file_path = "config.json"
 config = None
 with open(config_file_path, "r") as config_file:
@@ -16,8 +17,11 @@ def send_string(skt: socket, data: str):
     skt.sendall(message_length.to_bytes(4, "big"))
     skt.sendall(data)
 
-def send_cached_data(skt: socket, data):
-    dict = { "data": json.dumps(data) }
+def send_number(skt: socket, number: int):
+    skt.sendall(number.to_bytes(4, "big"))
+
+def send_cached_data(skt: socket, data, file_finished: bool):
+    dict = { "data": json.dumps(data), "file_finished": file_finished }
     send_string(skt, dict)
 
 def get_categories_dict(json_path: str):
@@ -37,14 +41,13 @@ def send_file_data(skt: socket, files_paths: str):
         next(csv_reader) #Discards header
         lines_accumulator = []
         for line in csv_reader:
-            category_id = str(line[5])
+            category_id = str(line[config["category_id_index"]])
             line.append(categories[category_id])
             lines_accumulator.append(line)
             if len(lines_accumulator) == batch_size:
-                send_cached_data(skt, lines_accumulator)
+                send_cached_data(skt, lines_accumulator, False)
                 lines_accumulator = []
-        if len(lines_accumulator) != 0:
-            send_cached_data(skt, lines_accumulator)
+        send_cached_data(skt, lines_accumulator, True)
 
 def send_files_data(files_paths_queue: mp.Queue):
     connection_address = config["accepter_address"]
@@ -71,12 +74,19 @@ def main():
 
     for process in child_processes:
         process.start()
+
+    connection_address = config["accepter_address"]
+    connection_port = config["accepter_port"]
+    main_process_connection_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    main_process_connection_socket.connect((connection_address, connection_port))
+    send_number(main_process_connection_socket, len(files_paths))
+
     for paths in files_paths:
         files_paths_queue.put(paths)
     for _ in range(len(child_processes)):
         files_paths_queue.put(None)
 
-    # TODO: WAIT FOR QUERY
+    # TODO: WAIT FOR QUERY RESPONSE
 
     for process in child_processes:
         process.join()
