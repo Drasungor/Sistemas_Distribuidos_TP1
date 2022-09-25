@@ -4,7 +4,7 @@
         "rabbit_port": "15672"
     },
     "accepter":{
-        "bound_port": "8080",
+        "bound_port": 8080,
         "listen_backlog": 10,
         "processes_amount": 3
     }

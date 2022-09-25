@@ -3,7 +3,7 @@ import multiprocessing as mp
 import json
 # import pika
 
-config_file_path = "config.json"
+config_file_path = "/config/config.json"
 config = None
 with open(config_file_path, "r") as config_file:
     config = json.load(open(config_file_path, "r"))
@@ -51,14 +51,16 @@ def main():
     server_socket.bind(('', local_config["bound_port"]))
     server_socket.listen(local_config["listen_backlog"])
 
-    connections_data = read_json(server_socket)
+    first_connection, _ = server_socket.accept()
+
+    connections_data = read_json(first_connection)
     incoming_connections = connections_data["connections_amount"]
     processes_amount = min([config["processes_amount"], mp.cpu_count(), incoming_connections])
     child_processes: "list[mp.Queue]" = []
     for _ in range(processes_amount):
         child_processes.append(mp.Process( target = handle_connection, args = [accepter_queue]))
     for _ in range(incoming_connections):
-        accepted_socket, address = server_socket.accept()
+        accepted_socket, _ = server_socket.accept()
         accepter_queue.put(accepted_socket)
     
     for _ in range(len(child_processes)):

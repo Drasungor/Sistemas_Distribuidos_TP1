@@ -3,6 +3,7 @@ version: '3'
 services:
   rabbitmq:
     build:
+      context: ./
       dockerfile: rabbitmq.dockerfile
     ports:
       - 15672:15672
@@ -11,13 +12,15 @@ services:
     image: python
     volumes:
       - ./client:/app
-    command: python main.py
+    command: python /app/main.py
+    working_dir: /app
 
   accepter:
     image: python
     volumes:
       - ./server/accepter:/app
-      - ./server/config.json:/app/config.json
+      - ./server/config.json:/config/config.json
     expose:
       - "8080"
-    command: python /app/main.py
+    command: python main.py
+    working_dir: /app

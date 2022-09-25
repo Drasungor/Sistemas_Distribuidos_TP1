@@ -1,7 +1,7 @@
 {
     "processes_amount": 3,
     "accepter_address": "accepter",
-    "accepter_port": "8080",
+    "accepter_port": 8080,
     "batch_size": "1000",
     "category_id_index": 5,
     "files_names": [
