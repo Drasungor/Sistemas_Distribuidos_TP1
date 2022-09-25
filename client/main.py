@@ -14,7 +14,7 @@ def send_string(skt: socket, data: str):
     encoded_data = data.encode()
     message_length = len(encoded_data)
     skt.sendall(message_length.to_bytes(4, "big"))
-    skt.sendall(data)
+    skt.sendall(data.encode())
 
 def send_number(skt: socket, number: int):
     skt.sendall(number.to_bytes(4, "big"))
@@ -25,8 +25,8 @@ def send_connection_data(skt: socket, connections_amount: int, files_amount: int
 
 
 def send_cached_data(skt: socket, data, file_finished: bool):
-    dict = { "data": json.dumps(data), "file_finished": file_finished }
-    send_string(skt, dict)
+    dict = { "data": data, "file_finished": file_finished }
+    send_string(skt, json.dumps(dict))
 
 def get_categories_dict(json_path: str):
     categories = {}
@@ -34,7 +34,7 @@ def get_categories_dict(json_path: str):
         category_dictionary = json.load(category_file_ptr)
         categories_array = category_dictionary["items"]
         for category in categories_array:
-            categories[category["id"]] = category["snippet"]["title"]
+            categories[str(category["id"])] = category["snippet"]["title"]
     return categories
 
 def send_file_data(skt: socket, files_paths: str):
@@ -46,7 +46,10 @@ def send_file_data(skt: socket, files_paths: str):
         lines_accumulator = []
         for line in csv_reader:
             category_id = str(line[config["category_id_index"]])
-            line.append(categories[category_id])
+            if category_id in categories:
+                line.append(categories[category_id])
+            else:
+                line.append(None)
             lines_accumulator.append(line)
             if len(lines_accumulator) == batch_size:
                 send_cached_data(skt, lines_accumulator, False)

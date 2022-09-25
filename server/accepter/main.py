@@ -14,19 +14,30 @@ class ClosedSocket(Exception):
 	pass
 
 def read_json(skt: socket):
-    json.loads(__read_string(skt))
+    return json.loads(__read_string(skt))
 
 def handle_connection(connections_queue: mp.Queue):
     read_socket = connections_queue.get()
     while read_socket != None:
         should_keep_iterating = True
+
+        # BORRAR
+        read_lines = 0
+
         while should_keep_iterating:
             # dict = { "data": json.dumps(data), "file_finished": file_finished }
             read_data = read_json(read_socket)
+        
+            # BORRAR
+            read_lines += len(read_data["data"])
+
             should_keep_iterating = not read_data["file_finished"]
             if len(read_data["data"]) != 0:
                 for line in read_data["data"]:
                     print(f"Category: {line[-1]}")
+
+        # BORRAR
+        print(f"Read lines: {read_lines}")
 
         read_socket = connections_queue.get()
 
@@ -41,7 +52,8 @@ def __recv_all(skt: socket, bytes_amount: int):
 
 def __read_string(skt: socket):
     string_length = int.from_bytes(__recv_all(skt, 4), "big")
-    return __recv_all(string_length).decode()
+    read_string = __recv_all(skt, string_length).decode()
+    return read_string
 
 
 def main():
@@ -51,14 +63,21 @@ def main():
     server_socket.bind(('', local_config["bound_port"]))
     server_socket.listen(local_config["listen_backlog"])
 
+    print("BORRAR Voy a aceptar")
     first_connection, _ = server_socket.accept()
+    print("BORRAR Acepte")
 
     connections_data = read_json(first_connection)
+    print(f"BORRAR Lei json: {connections_data}")
+
+
     incoming_connections = connections_data["connections_amount"]
-    processes_amount = min([config["processes_amount"], mp.cpu_count(), incoming_connections])
+    processes_amount = min([local_config["processes_amount"], mp.cpu_count(), incoming_connections])
     child_processes: "list[mp.Queue]" = []
     for _ in range(processes_amount):
-        child_processes.append(mp.Process( target = handle_connection, args = [accepter_queue]))
+        new_process = mp.Process( target = handle_connection, args = [accepter_queue])
+        child_processes.append(new_process)
+        new_process.start()
     for _ in range(incoming_connections):
         accepted_socket, _ = server_socket.accept()
         accepter_queue.put(accepted_socket)
@@ -70,5 +89,5 @@ def main():
     for i in range(len(child_processes)):
         child_processes[i].join()
 
-if __name__ == "main":
+if __name__ == "__main__":
     main()

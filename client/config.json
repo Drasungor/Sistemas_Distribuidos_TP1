@@ -6,48 +6,48 @@
     "category_id_index": 5,
     "files_names": [
         {
-            "category": "BR_category_id.json",
-            "trending": "BR_youtube_trending_data.json"
+            "category": "./data/BR_category_id.json",
+            "trending": "./data/BR_youtube_trending_data.csv"
         },
         {
-            "category": "CA_category_id.json",
-            "trending": "CA_youtube_trending_data.json"
+            "category": "./data/CA_category_id.json",
+            "trending": "./data/CA_youtube_trending_data.csv"
         },
         {
-            "category": "DE_category_id.json",
-            "trending": "DE_youtube_trending_data.json"
+            "category": "./data/DE_category_id.json",
+            "trending": "./data/DE_youtube_trending_data.csv"
         },
         {
-            "category": "FR_category_id.json",
-            "trending": "FR_youtube_trending_data.json"
+            "category": "./data/FR_category_id.json",
+            "trending": "./data/FR_youtube_trending_data.csv"
         },
         {
-            "category": "GB_category_id.json",
-            "trending": "GB_youtube_trending_data.json"
+            "category": "./data/GB_category_id.json",
+            "trending": "./data/GB_youtube_trending_data.csv"
         },
         {
-            "category": "IN_category_id.json",
-            "trending": "IN_youtube_trending_data.json"
+            "category": "./data/IN_category_id.json",
+            "trending": "./data/IN_youtube_trending_data.csv"
         },
         {
-            "category": "JP_category_id.json",
-            "trending": "JP_youtube_trending_data.json"
+            "category": "./data/JP_category_id.json",
+            "trending": "./data/JP_youtube_trending_data.csv"
         },
         {
-            "category": "KR_category_id.json",
-            "trending": "KR_youtube_trending_data.json"
+            "category": "./data/KR_category_id.json",
+            "trending": "./data/KR_youtube_trending_data.csv"
         },
         {
-            "category": "MX_category_id.json",
-            "trending": "MX_youtube_trending_data.json"
+            "category": "./data/MX_category_id.json",
+            "trending": "./data/MX_youtube_trending_data.csv"
         },
         {
-            "category": "RU_category_id.json",
-            "trending": "RU_youtube_trending_data.json"
+            "category": "./data/RU_category_id.json",
+            "trending": "./data/RU_youtube_trending_data.csv"
         },
         {
-            "category": "US_category_id.json",
-            "trending": "US_youtube_trending_data.json"
+            "category": "./data/US_category_id.json",
+            "trending": "./data/US_youtube_trending_data.csv"
         }
     ]
 }

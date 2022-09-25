@@ -8,19 +8,23 @@ services:
     ports:
       - 15672:15672
 
+  accepter:
+    image: python
+    environment:
+      - PYTHONUNBUFFERED=1
+    volumes:
+      - ./server/accepter:/app
+      - ./server/config.json:/config/config.json
+    expose:
+      - "8080"
+    entrypoint: "python main.py"
+    working_dir: /app
+
   client:
     image: python
     volumes:
       - ./client:/app
     command: python /app/main.py
     working_dir: /app
-
-  accepter:
-    image: python
-    volumes:
-      - ./server/accepter:/app
-      - ./server/config.json:/config/config.json
-    expose:
-      - "8080"
-    command: python main.py
-    working_dir: /app
+    depends_on:
+      - accepter
