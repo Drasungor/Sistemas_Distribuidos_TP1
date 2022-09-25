@@ -3,6 +3,35 @@
         "rabbit_address": "rabbitmq",
         "rabbit_port": "15672"
     },
+    "MOM": {
+        "broker_address": "rabbitmq",
+        "connections": {
+            "accepter": {
+                "receives_from": "output_receiver",
+                "sends_to": "input_distributor"
+            },
+            "general_aggregator": {
+                "receives_from": "input_distributor",
+                "sends_to": "aggregator_result"
+            },
+            "likes_filter_views_sum": {
+                "receives_from": "input_distributor",
+                "sends_to": "views_processor_input"
+            },
+            "max_views_day": {
+                "receives_from": "views_processor_input",
+                "sends_to": "output_receiver"
+            },
+            "likes_sum_funny_filter": {
+                "receives_from": "aggregator_result",
+                "sends_to": "output_receiver"
+            },
+            "countries_amount_filter": {
+                "receives_from": "aggregator_result",
+                "sends_to": "output_receiver"
+            }
+        }
+    },
     "accepter":{
         "bound_port": 8080,
         "listen_backlog": 10,

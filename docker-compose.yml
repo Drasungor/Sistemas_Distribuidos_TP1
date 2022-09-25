@@ -9,7 +9,8 @@ services:
       - 15672:15672
 
   accepter:
-    image: python
+    # image: python
+    build: ./server
     environment:
       - PYTHONUNBUFFERED=1
     volumes:

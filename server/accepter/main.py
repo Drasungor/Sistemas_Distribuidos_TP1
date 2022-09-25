@@ -1,7 +1,6 @@
 import socket
 import multiprocessing as mp
 import json
-# import pika
 
 config_file_path = "/config/config.json"
 config = None
@@ -34,7 +33,7 @@ def handle_connection(connections_queue: mp.Queue):
             should_keep_iterating = not read_data["file_finished"]
             if len(read_data["data"]) != 0:
                 for line in read_data["data"]:
-                    print(f"Category: {line[-1]}")
+                    print(f"Category: {line[0]}")
 
         # BORRAR
         print(f"Read lines: {read_lines}")
