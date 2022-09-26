@@ -1,7 +1,9 @@
 {
     "general": {
         "rabbit_address": "rabbitmq",
-        "rabbit_port": "15672"
+        "rabbit_port": "15672",
+        "video_id_index": 0,
+        "trending_date_index": 2
     },
     "MOM": {
         "broker_address": "rabbitmq",
