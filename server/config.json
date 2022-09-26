@@ -8,14 +8,14 @@
         "connections": {
             "accepter": {
                 "receives_from": "output_receiver",
-                "sends_to": "input_distributor"
+                "sends_to": ["general_aggregator_input", "likes_filter_views_sum_input"]
             },
             "general_aggregator": {
-                "receives_from": "input_distributor",
-                "sends_to": "aggregator_result"
+                "receives_from": "general_aggregator_input",
+                "sends_to": ["likes_sum_funny_filter_input", "countries_amount_filter_input"]
             },
             "likes_filter_views_sum": {
-                "receives_from": "input_distributor",
+                "receives_from": "likes_filter_views_sum_input",
                 "sends_to": "views_processor_input"
             },
             "max_views_day": {
@@ -23,11 +23,11 @@
                 "sends_to": "output_receiver"
             },
             "likes_sum_funny_filter": {
-                "receives_from": "aggregator_result",
+                "receives_from": "likes_sum_funny_filter_input",
                 "sends_to": "output_receiver"
             },
             "countries_amount_filter": {
-                "receives_from": "aggregator_result",
+                "receives_from": "countries_amount_filter_input",
                 "sends_to": "output_receiver"
             }
         }
@@ -36,5 +36,20 @@
         "bound_port": 8080,
         "listen_backlog": 10,
         "processes_amount": 3
+    },
+    "general_aggregator": {
+        "computers_amount": 2
+    },
+    "likes_filter_views_sum": {
+        "computers_amount": 2
+    },
+    "max_views_day": {
+        "computers_amount": 2
+    },
+    "likes_sum_funny_filter": {
+        "computers_amount": 2
+    },
+    "countries_amount_filter": {
+        "computers_amount": 2
     }
 }
