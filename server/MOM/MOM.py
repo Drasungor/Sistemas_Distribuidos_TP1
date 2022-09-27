@@ -34,6 +34,9 @@ class MOM:
             # TODO: assign receiver
                 
         elif connection_mode == "general_aggregator":
+
+            self.channel.exchange_declare(exchange = connections["general_aggregator"]["receives_from"], exchange_type = "direct")
+
             self.receiver = (connections["general_aggregator"]["receives_from"], "")
             result = self.channel.queue_declare(queue='', exclusive=True)
             queue_name = result.method.queue
@@ -43,6 +46,9 @@ class MOM:
             # TODO: assign sender
 
         elif connection_mode == "likes_filter_views_sum":
+
+            self.channel.exchange_declare(exchange = connections["likes_filter_views_sum"]["receives_from"], exchange_type = "direct")
+
             self.receiver = (connections["likes_filter_views_sum"]["receives_from"], "")
             result = self.channel.queue_declare(queue='', exclusive=True)
             queue_name = result.method.queue

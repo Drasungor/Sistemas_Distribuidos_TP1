@@ -4,7 +4,7 @@
         "rabbit_port": "15672",
         "video_id_index": 0,
         "trending_date_index": 2,
-        "EOF_subscription_routing_key": -1
+        "EOF_subscription_routing_key": "-1"
     },
     "MOM": {
         "broker_address": "rabbitmq",
