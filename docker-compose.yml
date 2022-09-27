@@ -22,6 +22,35 @@ services:
     entrypoint: "python main.py"
     working_dir: /app
 
+  general_aggregator:
+    # image: python
+    build: ./server
+    environment:
+      - PYTHONUNBUFFERED=1
+    volumes:
+      - ./server/general_aggregator:/app
+      - ./server/MOM:/app/MOM
+      - ./server/config.json:/config/config.json
+    expose:
+      - "8080"
+    entrypoint: "python main.py"
+    working_dir: /app
+
+  likes_filter_views_sum:
+        # image: python
+    build: ./server
+    environment:
+      - PYTHONUNBUFFERED=1
+    volumes:
+      - ./server/likes_filter_views_sum:/app
+      - ./server/MOM:/app/MOM
+      - ./server/config.json:/config/config.json
+    expose:
+      - "8080"
+    entrypoint: "python main.py"
+    working_dir: /app
+
+
   client:
     image: python
     volumes:

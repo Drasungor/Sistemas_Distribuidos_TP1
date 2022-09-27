@@ -17,7 +17,7 @@ def read_json(skt: socket):
     return json.loads(__read_string(skt))
 
 def handle_connection(connections_queue: mp.Queue):
-    
+    middleware = MOM("accepter", None)
     read_socket = connections_queue.get()
     while read_socket != None:
         should_keep_iterating = True
@@ -35,7 +35,9 @@ def handle_connection(connections_queue: mp.Queue):
             should_keep_iterating = not read_data["file_finished"]
             if len(read_data["data"]) != 0:
                 for line in read_data["data"]:
-                    print(f"Category: {line[0]}")
+                    middleware.send_line(line)
+                    pass
+                    # print(f"Category: {line[0]}")
 
         # BORRAR
         print(f"Read lines: {read_lines}")
