@@ -30,7 +30,25 @@ services:
       rabbitmq:
         condition: service_healthy
 
-  general_aggregator1:
+  general_aggregator_0:
+    # image: python
+    build: ./server
+    environment:
+      - PYTHONUNBUFFERED=1
+      - NODE_ID=0
+    volumes:
+      - ./server/general_aggregator:/app
+      - ./server/MOM:/app/MOM
+      - ./server/config.json:/config/config.json
+    expose:
+      - "8080"
+    entrypoint: "python main.py"
+    working_dir: /app
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+
+  general_aggregator_1:
     # image: python
     build: ./server
     environment:
@@ -48,30 +66,12 @@ services:
       rabbitmq:
         condition: service_healthy
 
-  general_aggregator2:
-    # image: python
-    build: ./server
-    environment:
-      - PYTHONUNBUFFERED=1
-      - NODE_ID=2
-    volumes:
-      - ./server/general_aggregator:/app
-      - ./server/MOM:/app/MOM
-      - ./server/config.json:/config/config.json
-    expose:
-      - "8080"
-    entrypoint: "python main.py"
-    working_dir: /app
-    depends_on:
-      rabbitmq:
-        condition: service_healthy
-
-  likes_filter_views_sum1:
+  likes_filter_views_sum_0:
         # image: python
     build: ./server
     environment:
       - PYTHONUNBUFFERED=1
-      - NODE_ID=1
+      - NODE_ID=0
     volumes:
       - ./server/likes_filter_views_sum:/app
       - ./server/MOM:/app/MOM
@@ -84,12 +84,12 @@ services:
       rabbitmq:
         condition: service_healthy
 
-  likes_filter_views_sum2:
+  likes_filter_views_sum_1:
         # image: python
     build: ./server
     environment:
       - PYTHONUNBUFFERED=1
-      - NODE_ID=2
+      - NODE_ID=1
     volumes:
       - ./server/likes_filter_views_sum:/app
       - ./server/MOM:/app/MOM
