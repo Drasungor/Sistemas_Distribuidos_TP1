@@ -2,8 +2,8 @@ import json
 from MOM.MOM import MOM
 import os
 
-def print_line(line): 
-    for element in line:
+def print_line(ch, method, properties, body): 
+    for element in body:
         id = os.environ["NODE_ID"]
         print(f"Node id {id}: {element}", end = ",")
         print("")
