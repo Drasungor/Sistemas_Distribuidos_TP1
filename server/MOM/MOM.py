@@ -37,7 +37,7 @@ class MOM:
             self.receiver = (connections["general_aggregator"]["receives_from"], "")
             result = self.channel.queue_declare(queue='', exclusive=True)
             queue_name = result.method.queue
-            self.channel.queue_bind(exchange = self.receiver[0], queue = queue_name, routing_key = int(os.environ["NODE_ID"]))
+            self.channel.queue_bind(exchange = self.receiver[0], queue = queue_name, routing_key = os.environ["NODE_ID"])
             self.channel.queue_bind(exchange = self.receiver[0], queue = queue_name, routing_key = general_config["EOF_subscription_routing_key"])
             self.channel.basic_consume(queue=queue_name, on_message_callback=receiver_callback, auto_ack=True)
             # TODO: assign sender
@@ -46,7 +46,7 @@ class MOM:
             self.receiver = (connections["likes_filter_views_sum"]["receives_from"], "")
             result = self.channel.queue_declare(queue='', exclusive=True)
             queue_name = result.method.queue
-            self.channel.queue_bind(exchange = self.receiver[0], queue = queue_name, routing_key = int(os.environ["NODE_ID"]))
+            self.channel.queue_bind(exchange = self.receiver[0], queue = queue_name, routing_key = os.environ["NODE_ID"])
             self.channel.queue_bind(exchange = self.receiver[0], queue = queue_name, routing_key = general_config["EOF_subscription_routing_key"])
             self.channel.basic_consume(queue=queue_name, on_message_callback=receiver_callback, auto_ack=True)
             # TODO: assign sender
