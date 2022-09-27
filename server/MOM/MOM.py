@@ -1,5 +1,6 @@
 import json
 import pika
+import os
 
 config_file_path = "/config/config.json"
 config = None
@@ -9,7 +10,7 @@ general_config = config["general"]
 local_config = config["MOM"]
 
 class MOM:
-    def __init__(self, connection_mode: str):
+    def __init__(self, connection_mode: str, receiver_callback):
         self.connection = pika.BlockingConnection(pika.ConnectionParameters(local_config["broker_address"]))
         self.channel = self.connection.channel()
         self.receiver = (None, None) # (exchange, queue)
@@ -25,8 +26,8 @@ class MOM:
             self.sender.append((connections_array[0], config["general_aggregator"]["computers_amount"])) # (exchange name, receiver computers amount)
             self.sender.append((connections_array[1], config["likes_filter_views_sum"]["computers_amount"])) # (exchange name, receiver computers amount)
 
-            self.channel.exchange_declare(exchange=self.sender[0][0], exchange_type='fanout')
-            self.channel.exchange_declare(exchange=self.sender[1][0], exchange_type='fanout')
+            self.channel.exchange_declare(exchange = self.sender[0][0], exchange_type = "direct")
+            self.channel.exchange_declare(exchange = self.sender[1][0], exchange_type = "direct")
 
             # TODO: TERMINAR DE CONFIGURAR LAS COLAS DE PUBLISH Y SUBSCRIBE
 
@@ -34,10 +35,22 @@ class MOM:
                 
         elif connection_mode == "general_aggregator":
             self.receiver = (connections["general_aggregator"]["receives_from"], "")
+            result = self.channel.queue_declare(queue='', exclusive=True)
+            queue_name = result.method.queue
+            self.channel.queue_bind(exchange = self.receiver[0], queue = queue_name, routing_key = int(os.environ["NODE_ID"]))
+            self.channel.queue_bind(exchange = self.receiver[0], queue = queue_name, routing_key = general_config["EOF_subscription_routing_key"])
+            self.channel.basic_consume(queue=queue_name, on_message_callback=receiver_callback, auto_ack=True)
             # TODO: assign sender
+
         elif connection_mode == "likes_filter_views_sum":
             self.receiver = (connections["likes_filter_views_sum"]["receives_from"], "")
+            result = self.channel.queue_declare(queue='', exclusive=True)
+            queue_name = result.method.queue
+            self.channel.queue_bind(exchange = self.receiver[0], queue = queue_name, routing_key = int(os.environ["NODE_ID"]))
+            self.channel.queue_bind(exchange = self.receiver[0], queue = queue_name, routing_key = general_config["EOF_subscription_routing_key"])
+            self.channel.basic_consume(queue=queue_name, on_message_callback=receiver_callback, auto_ack=True)
             # TODO: assign sender
+
         elif connection_mode == "max_views_day":
             pass
         elif connection_mode == "likes_sum_funny_filter":
