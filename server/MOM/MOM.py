@@ -62,8 +62,8 @@ class MOM:
             pass
 
     def send_line(self, line):
+        line_string = json.dumps(line)
         if self.connection_mode == "accepter":
-            line_string = json.dumps(line)
 
             video_id = line[general_config["video_id_index"]]
             routing_key_number = hash(video_id) % self.sender[0][1]
@@ -86,6 +86,9 @@ class MOM:
         else:
             # raise error
             pass
+
+    def start_received_messages_processing(self):
+        self.channel.start_consuming()
 
     def close(self):
         self.connection.close()
