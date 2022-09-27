@@ -15,6 +15,7 @@ services:
       - PYTHONUNBUFFERED=1
     volumes:
       - ./server/accepter:/app
+      - ./server/MOM:/app/MOM
       - ./server/config.json:/config/config.json
     expose:
       - "8080"

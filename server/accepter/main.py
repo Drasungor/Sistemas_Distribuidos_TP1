@@ -1,6 +1,7 @@
 import socket
 import multiprocessing as mp
 import json
+from MOM.MOM import MOM
 
 config_file_path = "/config/config.json"
 config = None
@@ -16,6 +17,7 @@ def read_json(skt: socket):
     return json.loads(__read_string(skt))
 
 def handle_connection(connections_queue: mp.Queue):
+    
     read_socket = connections_queue.get()
     while read_socket != None:
         should_keep_iterating = True
