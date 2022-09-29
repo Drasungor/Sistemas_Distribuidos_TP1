@@ -57,21 +57,30 @@
         "listen_backlog": 10,
         "processes_amount": 3
     },
+    "likes_filter": {
+        "computers_amount": 2,
+        "likes_min": 5000000
+    },
     "funny_filter": {
         "computers_amount": 2,
         "tag": "funny"
     },
-    "likes_filter_views_sum": {
+    "duplication_filter": {
+        "computers_amount": 2
+    },
+    "views_sum": {
         "computers_amount": 2
     },
     "max_views_day": {
         "computers_amount": 2
     },
-    "likes_filter": {
-        "computers_amount": 2,
-        "likes_min": 5000000
+    "trending_days_filter": {
+        "computers_amount": 2
     },
     "countries_amount_filter": {
+        "computers_amount": 2
+    },
+    "thumbnails_downloader": {
         "computers_amount": 2
     }
 }
