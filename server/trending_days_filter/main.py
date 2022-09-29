@@ -6,7 +6,7 @@ config = None
 with open(config_file_path, "r") as config_file:
     config = json.load(open(config_file_path, "r"))
 general_config = config["general"]
-local_config = config["views_sum"]
+local_config = config["trending_days_filter"]
 
 class ViewsSum:
     def __init__(self):
