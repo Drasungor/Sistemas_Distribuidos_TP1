@@ -4,6 +4,7 @@
         "rabbit_port": "15672",
         "video_id_index": 0,
         "trending_date_index": 2,
+        "tags_index": 7,
         "EOF_subscription_routing_key": "-1"
     },
     "MOM": {
@@ -53,7 +54,8 @@
         "processes_amount": 3
     },
     "funny_filter": {
-        "computers_amount": 2
+        "computers_amount": 2,
+        "tag": "funny"
     },
     "likes_filter_views_sum": {
         "computers_amount": 2
