@@ -16,7 +16,7 @@ class FunnyFilter:
         line = json.loads(body)
         likes_amount: str = line[general_config["likes_index"]]
         if likes_amount >= local_config["likes_min"]:
-            self.middleware.send_line(body)
+            self.middleware.send(body)
 
     def start_received_messages_processing(self):
         self.middleware.start_received_messages_processing()

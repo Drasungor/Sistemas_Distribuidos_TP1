@@ -6,7 +6,7 @@ config = None
 with open(config_file_path, "r") as config_file:
     config = json.load(open(config_file_path, "r"))
 general_config = config["general"]
-local_config = config["max_views_day"]
+local_config = config["views_sum"]
 
 class ViewsSum:
     def __init__(self):
@@ -23,11 +23,8 @@ class ViewsSum:
         # # else:
         # #     self.aggregation_dict[date] += view_count
 
-
-        # TODO: implement this logic
-        # iterate received array and update max day
-        # If cant finished received = pcs views sum amount
-        # send max day
+        # trending_amount["video.country"] += 1
+        # if trending_amount["video.country"] == 21 -> send video
 
 
     def start_received_messages_processing(self):

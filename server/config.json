@@ -5,6 +5,7 @@
         "video_id_index": 0,
         "trending_date_index": 2,
         "tags_index": 7,
+        "views_index": 8,
         "likes_index": 9,
         "EOF_subscription_routing_key": "-1"
     },

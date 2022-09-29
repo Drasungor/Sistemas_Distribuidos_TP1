@@ -6,7 +6,7 @@ config = None
 with open(config_file_path, "r") as config_file:
     config = json.load(open(config_file_path, "r"))
 general_config = config["general"]
-local_config = config["max_views_day"]
+local_config = config["views_sum"]
 
 class ViewsSum:
     def __init__(self):
@@ -14,20 +14,16 @@ class ViewsSum:
         self.aggregation_dict = {}
 
     def process_received_message(self, ch, method, properties, body):
-        pass
-        # # line = json.loads(body)
-        # # date: str = line[general_config["trending_date_index"]]
-        # # view_count: str = line[general_config["views_index"]]
-        # # if not (date in self.aggregation_dict):
-        # #     self.aggregation_dict[date] = view_count
-        # # else:
-        # #     self.aggregation_dict[date] += view_count
+        line = json.loads(body)
+        date: str = line[general_config["trending_date_index"]]
+        view_count: str = line[general_config["views_index"]]
+        if not (date in self.aggregation_dict):
+            self.aggregation_dict[date] = view_count
+        else:
+            self.aggregation_dict[date] += view_count
 
-
-        # TODO: implement this logic
-        # iterate received array and update max day
-        # If cant finished received = pcs views sum amount
-        # send max day
+        # TODO: add If mensaje de eof to execute this line
+        self.middleware.send(json.dumps(self.aggregation_dict))
 
 
     def start_received_messages_processing(self):

@@ -23,8 +23,8 @@ class MOM:
         if connection_mode == "accepter":
             self.sender = []
             connections_array = connections["accepter"]["sends_to"]
-            self.sender.append((connections_array[0], config["general_aggregator"]["computers_amount"])) # (exchange name, receiver computers amount)
-            self.sender.append((connections_array[1], config["likes_filter_views_sum"]["computers_amount"])) # (exchange name, receiver computers amount)
+            self.sender.append((connections_array[0], config["likes_filter"]["computers_amount"])) # (exchange name, receiver computers amount)
+            self.sender.append((connections_array[1], config["trending_days_filter"]["computers_amount"])) # (exchange name, receiver computers amount)
 
             self.channel.exchange_declare(exchange = self.sender[0][0], exchange_type = "direct")
             self.channel.exchange_declare(exchange = self.sender[1][0], exchange_type = "direct")
@@ -33,11 +33,11 @@ class MOM:
 
             # TODO: assign receiver
                 
-        elif connection_mode == "general_aggregator":
+        elif connection_mode == "funny_filter":
 
-            self.channel.exchange_declare(exchange = connections["general_aggregator"]["receives_from"], exchange_type = "direct")
+            self.channel.exchange_declare(exchange = connections["funny_filter"]["receives_from"], exchange_type = "direct")
 
-            self.receiver = (connections["general_aggregator"]["receives_from"], "")
+            self.receiver = (connections["funny_filter"]["receives_from"], "")
             result = self.channel.queue_declare(queue='', exclusive=True)
             queue_name = result.method.queue
             self.channel.queue_bind(exchange = self.receiver[0], queue = queue_name, routing_key = os.environ["NODE_ID"])
@@ -67,7 +67,7 @@ class MOM:
             # raise error
             pass
 
-    def send_line(self, line):
+    def send(self, line):
         line_string = json.dumps(line)
         if self.connection_mode == "accepter":
 

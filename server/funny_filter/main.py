@@ -16,7 +16,7 @@ class FunnyFilter:
         line = json.loads(body)
         tags: str = line[general_config["tags_index"]]
         if local_config["tag"] in tags:
-            self.middleware.send_line(body)
+            self.middleware.send(body)
 
     def start_received_messages_processing(self):
         self.middleware.start_received_messages_processing()
