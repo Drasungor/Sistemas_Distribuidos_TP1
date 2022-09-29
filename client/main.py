@@ -37,10 +37,12 @@ def get_categories_dict(json_path: str):
             categories[str(category["id"])] = category["snippet"]["title"]
     return categories
 
-def send_file_data(skt: socket, files_paths: str):
+def send_file_data(skt: socket, files_paths):
     batch_size = config["batch_size"]
     categories = get_categories_dict(files_paths["category"])
-    with open(files_paths["trending"]) as trending_file_ptr:
+    trending_file_path: str = files_paths["trending"]
+    country_prefix = trending_file_path.split(".")[2][0:2]
+    with open(trending_file_path) as trending_file_ptr:
         csv_reader = csv.reader(trending_file_ptr)
         next(csv_reader) #Discards header
         lines_accumulator = []
@@ -50,6 +52,7 @@ def send_file_data(skt: socket, files_paths: str):
                 line.append(categories[category_id])
             else:
                 line.append(None)
+            line.append(country_prefix)
             lines_accumulator.append(line)
             if len(lines_accumulator) == batch_size:
                 send_cached_data(skt, lines_accumulator, False)

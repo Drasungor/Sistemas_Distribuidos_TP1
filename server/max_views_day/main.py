@@ -10,7 +10,7 @@ local_config = config["max_views_day"]
 
 class MaxViewsDay:
     def __init__(self):
-        self.middleware = MOM("views_sum", self.process_received_message)
+        self.middleware = MOM("max_views_day", self.process_received_message)
         self.max_views_date = (None, 0)
 
     def process_received_message(self, ch, method, properties, body):

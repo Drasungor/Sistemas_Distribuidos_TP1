@@ -8,9 +8,9 @@ with open(config_file_path, "r") as config_file:
 general_config = config["general"]
 local_config = config["views_sum"]
 
-class ViewsSum:
+class CountriesAmountFilter:
     def __init__(self):
-        self.middleware = MOM("views_sum", self.process_received_message)
+        self.middleware = MOM("countries_amount_filter", self.process_received_message)
         self.videos_countries = {}
         self.countries_amount = None # TODO: we should receive the amount of countries after the client establishes a connection
 
@@ -31,7 +31,7 @@ class ViewsSum:
         self.middleware.start_received_messages_processing()
 
 def main():
-    wrapper = ViewsSum()
+    wrapper = CountriesAmountFilter()
     wrapper.start_received_messages_processing()
 
 if __name__ == "__main__":
