@@ -6,16 +6,16 @@ config = None
 with open(config_file_path, "r") as config_file:
     config = json.load(open(config_file_path, "r"))
 general_config = config["general"]
-local_config = config["funny_filter"]
+local_config = config["likes_filter"]
 
 class FunnyFilter:
     def __init__(self):
-        self.middleware = MOM("funny_filter", self.process_received_line)
+        self.middleware = MOM("likes_filter", self.process_received_line)
 
     def process_received_line(self, ch, method, properties, body):
         line = json.loads(body)
-        tags: str = line[general_config["tags_index"]]
-        if local_config["tag"] in tags:
+        likes_amount: str = line[general_config["likes_index"]]
+        if likes_amount >= local_config["likes_min"]:
             self.middleware.send_line(body)
 
     def start_received_messages_processing(self):

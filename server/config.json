@@ -5,6 +5,7 @@
         "video_id_index": 0,
         "trending_date_index": 2,
         "tags_index": 7,
+        "likes_index": 9,
         "EOF_subscription_routing_key": "-1"
     },
     "MOM": {
@@ -12,10 +13,10 @@
         "connections": {
             "accepter": {
                 "receives_from": "output_receiver",
-                "sends_to": ["views_filter_input", "trending_days_filter_input"]
+                "sends_to": ["likes_filter_input", "trending_days_filter_input"]
             },
-            "views_filter": {
-                "receives_from": "views_filter_input",
+            "likes_filter": {
+                "receives_from": "likes_filter_input",
                 "sends_to": ["funny_filter_input", "views_sum_input"]
             },
             "funny_filter": {
@@ -63,8 +64,9 @@
     "max_views_day": {
         "computers_amount": 2
     },
-    "likes_sum_funny_filter": {
-        "computers_amount": 2
+    "likes_filter": {
+        "computers_amount": 2,
+        "likes_min": 5000000
     },
     "countries_amount_filter": {
         "computers_amount": 2
