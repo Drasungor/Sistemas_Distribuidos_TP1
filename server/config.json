@@ -11,26 +11,38 @@
         "connections": {
             "accepter": {
                 "receives_from": "output_receiver",
-                "sends_to": ["general_aggregator_input", "likes_filter_views_sum_input"]
+                "sends_to": ["views_filter_input", "trending_days_filter_input"]
             },
-            "general_aggregator": {
-                "receives_from": "general_aggregator_input",
-                "sends_to": ["likes_sum_funny_filter_input", "countries_amount_filter_input"]
+            "views_filter": {
+                "receives_from": "views_filter_input",
+                "sends_to": ["funny_filter_input", "views_sum_input"]
             },
-            "likes_filter_views_sum": {
-                "receives_from": "likes_filter_views_sum_input",
+            "funny_filter": {
+                "receives_from": "funny_filter_input",
+                "sends_to": "duplication_filter_input"
+            },
+            "duplication_filter": {
+                "receives_from": "duplication_filter_input",
+                "sends_to": "output_receiver"
+            },
+            "views_sum": {
+                "receives_from": "views_sum_input",
                 "sends_to": "views_processor_input"
             },
             "max_views_day": {
                 "receives_from": "views_processor_input",
                 "sends_to": "output_receiver"
             },
-            "likes_sum_funny_filter": {
-                "receives_from": "likes_sum_funny_filter_input",
-                "sends_to": "output_receiver"
+            "trending_days_filter": {
+                "receives_from": "trending_days_filter_input",
+                "sends_to": "countries_amount_filter_input"
             },
             "countries_amount_filter": {
                 "receives_from": "countries_amount_filter_input",
+                "sends_to": "thumbnails_downloader_input"
+            },
+            "thumbnails_downloader": {
+                "receives_from": "thumbnails_downloader_input",
                 "sends_to": "output_receiver"
             }
         }
@@ -40,7 +52,7 @@
         "listen_backlog": 10,
         "processes_amount": 3
     },
-    "general_aggregator": {
+    "funny_filter": {
         "computers_amount": 2
     },
     "likes_filter_views_sum": {

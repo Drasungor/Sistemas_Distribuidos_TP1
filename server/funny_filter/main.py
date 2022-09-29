@@ -3,7 +3,8 @@ import os
 from MOM.MOM import MOM
 
 def print_line(ch, method, properties, body):
-    for element in body:
+    line = json.loads(body)
+    for element in line:
         id = os.environ["NODE_ID"]
         print(f"Node id {id}: {element}", end = ",")
         print("")
