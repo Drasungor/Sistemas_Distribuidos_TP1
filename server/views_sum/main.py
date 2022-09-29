@@ -14,17 +14,16 @@ class ViewsSum:
         self.aggregation_dict = {}
 
     def process_received_message(self, ch, method, properties, body):
-        line = json.loads(body)
-        date: str = line[general_config["trending_date_index"]]
-        view_count: str = line[general_config["views_index"]]
-        if not (date in self.aggregation_dict):
-            self.aggregation_dict[date] = view_count
+        if method.routing_key == "-1":
+            self.middleware.send_final(json.dumps(self.aggregation_dict))
         else:
-            self.aggregation_dict[date] += view_count
-
-        # TODO: add If mensaje de eof to execute this line
-        self.middleware.send(json.dumps(self.aggregation_dict))
-
+            line = json.loads(body)
+            date: str = line[general_config["trending_date_index"]]
+            view_count: str = line[general_config["views_index"]]
+            if not (date in self.aggregation_dict):
+                self.aggregation_dict[date] = view_count
+            else:
+                self.aggregation_dict[date] += view_count
 
     def start_received_messages_processing(self):
         self.middleware.start_received_messages_processing()

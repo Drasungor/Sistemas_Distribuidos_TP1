@@ -8,33 +8,32 @@ with open(config_file_path, "r") as config_file:
 general_config = config["general"]
 local_config = config["max_views_day"]
 
-class ViewsSum:
+class MaxViewsDay:
     def __init__(self):
         self.middleware = MOM("views_sum", self.process_received_message)
-        self.aggregation_dict = {}
+        self.max_views_date = (None, 0)
 
     def process_received_message(self, ch, method, properties, body):
-        pass
-        # # line = json.loads(body)
-        # # date: str = line[general_config["trending_date_index"]]
-        # # view_count: str = line[general_config["views_index"]]
-        # # if not (date in self.aggregation_dict):
-        # #     self.aggregation_dict[date] = view_count
-        # # else:
-        # #     self.aggregation_dict[date] += view_count
-
-
         # TODO: implement this logic
         # iterate received array and update max day
         # If cant finished received = pcs views sum amount
         # send max day
-
+        if method.routing_key == "-1": # TODO: check if this condition is correct
+            # Send current max
+            # Check if also the last views sum is sent in this message
+            final_message_dict = { "type": "max_views_day", "max_day": self.max_views_date }
+            self.middleware.send_final()
+        else:
+            daily_views_dict = json.loads(body)
+            for day in daily_views_dict:
+                if daily_views_dict[day] > self.max_views_date[1]:
+                    self.max_views_date = (day, daily_views_dict[day])
 
     def start_received_messages_processing(self):
         self.middleware.start_received_messages_processing()
 
 def main():
-    wrapper = ViewsSum()
+    wrapper = MaxViewsDay()
     wrapper.start_received_messages_processing()
 
 if __name__ == "__main__":

@@ -67,17 +67,17 @@ class MOM:
             # raise error
             pass
 
-    def send(self, line):
-        line_string = json.dumps(line)
+    def send(self, message):
+        message_string = json.dumps(message)
         if self.connection_mode == "accepter":
-
+            line = message
             video_id = line[general_config["video_id_index"]]
             routing_key_number = hash(video_id) % self.sender[0][1]
-            self.channel.basic_publish(exchange = self.sender[0][0], routing_key = str(routing_key_number), body = line_string)
+            self.channel.basic_publish(exchange = self.sender[0][0], routing_key = str(routing_key_number), body = message_string)
 
             trending_date = line[general_config["trending_date_index"]]
             routing_key_number = hash(trending_date) % self.sender[1][1]
-            self.channel.basic_publish(exchange = self.sender[1][0], routing_key = str(routing_key_number), body = line_string)
+            self.channel.basic_publish(exchange = self.sender[1][0], routing_key = str(routing_key_number), body = message_string)
 
         elif self.connection_mode == "general_aggregator":
             pass
@@ -92,6 +92,9 @@ class MOM:
         else:
             # raise error
             pass
+
+    def send_final(self, message):
+        pass
 
     def start_received_messages_processing(self):
         self.channel.start_consuming()
