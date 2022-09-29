@@ -7,6 +7,8 @@
         "tags_index": 7,
         "views_index": 8,
         "likes_index": 9,
+        "category_name_index": 10,
+        "country_index": 11,
         "EOF_subscription_routing_key": "-1"
     },
     "MOM": {

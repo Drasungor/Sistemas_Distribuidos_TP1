@@ -11,23 +11,21 @@ local_config = config["views_sum"]
 class ViewsSum:
     def __init__(self):
         self.middleware = MOM("views_sum", self.process_received_message)
-        self.aggregation_dict = {}
+        self.videos_countries = {}
+        self.countries_amount = None # TODO: we should receive the amount of countries after the client establishes a connection
 
     def process_received_message(self, ch, method, properties, body):
-        pass
-        # # line = json.loads(body)
-        # # date: str = line[general_config["trending_date_index"]]
-        # # view_count: str = line[general_config["views_index"]]
-        # # if not (date in self.aggregation_dict):
-        # #     self.aggregation_dict[date] = view_count
-        # # else:
-        # #     self.aggregation_dict[date] += view_count
-
-        # if len(countries[video]) != countries_amount
-            # countries[video].insert(country) (it's a set)
-        # if len(countries[video]) == countries_amount
-            # send video
-
+        line = json.loads(body)
+        video_id = line[general_config["video_id_index"]]
+        country = line[general_config["country_index"]]
+        if not (video_id in self.videos_countries):
+            self.videos_countries[video_id] = set()
+        video_set = self.videos_countries[video_id]
+        previous_countries_amount = len(video_set)
+        video_set.add(country)
+        current_countries_amount = len(video_set)
+        if (current_countries_amount == self.countries_amount) and (previous_countries_amount != current_countries_amount):
+            self.middleware.send(video_id)
 
     def start_received_messages_processing(self):
         self.middleware.start_received_messages_processing()

@@ -22,7 +22,7 @@ class MaxViewsDay:
             # Send current max
             # Check if also the last views sum is sent in this message
             final_message_dict = { "type": "max_views_day", "max_day": self.max_views_date }
-            self.middleware.send_final()
+            self.middleware.send_final(final_message_dict)
         else:
             daily_views_dict = json.loads(body)
             for day in daily_views_dict:
