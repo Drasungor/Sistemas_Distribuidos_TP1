@@ -39,6 +39,10 @@ def get_categories_dict(json_path: str):
 
 def send_file_data(skt: socket, files_paths):
     batch_size = config["batch_size"]
+
+
+    # TODO: ENVIAR LOS ARCHIVOS DE CATEGORIAS, EL JOIN TIENE QUE HACERSE EN EL SERVER, probablemente en el duplicator filter, 
+    #       TAMBIEN DEBERÍA AGREGARSE EN EL SERVER EL PAIS EN CADA LINEA
     categories = get_categories_dict(files_paths["category"])
     trending_file_path: str = files_paths["trending"]
     country_prefix = trending_file_path.split(".")[2][0:2]

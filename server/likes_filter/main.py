@@ -8,7 +8,7 @@ with open(config_file_path, "r") as config_file:
 general_config = config["general"]
 local_config = config["likes_filter"]
 
-class FunnyFilter:
+class LikesFilter:
     def __init__(self):
         self.middleware = MOM("likes_filter", self.process_received_line)
 
@@ -22,7 +22,7 @@ class FunnyFilter:
         self.middleware.start_received_messages_processing()
 
 def main():
-    wrapper = FunnyFilter()
+    wrapper = LikesFilter()
     wrapper.start_received_messages_processing()
 
 if __name__ == "__main__":

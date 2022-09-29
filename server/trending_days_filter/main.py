@@ -8,7 +8,7 @@ with open(config_file_path, "r") as config_file:
 general_config = config["general"]
 local_config = config["trending_days_filter"]
 
-class ViewsSum:
+class TrendingDaysFilter:
     def __init__(self):
         self.middleware = MOM("views_sum", self.process_received_message)
         self.aggregation_dict = {}
@@ -31,7 +31,7 @@ class ViewsSum:
         self.middleware.start_received_messages_processing()
 
 def main():
-    wrapper = ViewsSum()
+    wrapper = TrendingDaysFilter()
     wrapper.start_received_messages_processing()
 
 if __name__ == "__main__":
