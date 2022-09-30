@@ -29,9 +29,8 @@ class MOM:
             self.channel.exchange_declare(exchange = self.sender[0][0], exchange_type = "direct")
             self.channel.exchange_declare(exchange = self.sender[1][0], exchange_type = "direct")
 
-            # TODO: TERMINAR DE CONFIGURAR LAS COLAS DE PUBLISH Y SUBSCRIBE
-
-            # TODO: assign receiver
+            self.receiver = ("", connections["accepter"]["receives_from"])
+            self.channel.queue_declare(queue = self.receiver[1])
                 
         elif connection_mode == "funny_filter":
 
@@ -45,27 +44,32 @@ class MOM:
             self.channel.basic_consume(queue=queue_name, on_message_callback=receiver_callback, auto_ack=True)
             # TODO: assign sender
 
-        elif connection_mode == "likes_filter_views_sum":
+        elif connection_mode == "likes_filter":
+            self.channel.exchange_declare(exchange = connections["likes_filter"]["receives_from"], exchange_type = "direct")
 
-            self.channel.exchange_declare(exchange = connections["likes_filter_views_sum"]["receives_from"], exchange_type = "direct")
-
-            self.receiver = (connections["likes_filter_views_sum"]["receives_from"], "")
+            self.receiver = (connections["likes_filter"]["receives_from"], "")
             result = self.channel.queue_declare(queue='', exclusive=True)
             queue_name = result.method.queue
             self.channel.queue_bind(exchange = self.receiver[0], queue = queue_name, routing_key = os.environ["NODE_ID"])
             self.channel.queue_bind(exchange = self.receiver[0], queue = queue_name, routing_key = general_config["EOF_subscription_routing_key"])
             self.channel.basic_consume(queue=queue_name, on_message_callback=receiver_callback, auto_ack=True)
             # TODO: assign sender
-
+        elif connection_mode == "duplication_filter":
+            pass
         elif connection_mode == "max_views_day":
             pass
-        elif connection_mode == "likes_sum_funny_filter":
+        elif connection_mode == "views_sum":
+            pass
+        elif connection_mode == "trending_days_filter":
             pass
         elif connection_mode == "countries_amount_filter":
+            pass
+        elif connection_mode == "thumbnails_downloader":
             pass
         else:
             # raise error
             pass
+
 
     def send(self, message):
         message_string = json.dumps(message)
@@ -78,16 +82,21 @@ class MOM:
             trending_date = line[general_config["trending_date_index"]]
             routing_key_number = hash(trending_date) % self.sender[1][1]
             self.channel.basic_publish(exchange = self.sender[1][0], routing_key = str(routing_key_number), body = message_string)
-
-        elif self.connection_mode == "general_aggregator":
+        elif self.connection_mode == "funny_filter":
             pass
-        elif self.connection_mode == "likes_filter_views_sum":
+        elif self.connection_mode == "likes_filter":
+            pass
+        elif self.connection_mode == "duplication_filter":
             pass
         elif self.connection_mode == "max_views_day":
             pass
-        elif self.connection_mode == "likes_sum_funny_filter":
+        elif self.connection_mode == "views_sum":
+            pass
+        elif self.connection_mode == "trending_days_filter":
             pass
         elif self.connection_mode == "countries_amount_filter":
+            pass
+        elif self.connection_mode == "thumbnails_downloader":
             pass
         else:
             # raise error
