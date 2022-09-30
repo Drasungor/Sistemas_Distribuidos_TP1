@@ -85,11 +85,14 @@ class MOM:
         if self.connection_mode == "accepter":
             line = message
             video_id = line[general_config["video_id_index"]]
-            routing_key_number = hash(video_id) % self.sender[0][1]
+            routing_key_number = hash(video_id) % self.sender[0][1] # It would still work with a task queue, but it is more easily configurable if everything
+                                                                    # is an exchange, and also we don't leak implementation specifications into the config file
+                                                                    # TODO: set hashing keys in config
             self.channel.basic_publish(exchange = self.sender[0][0], routing_key = str(routing_key_number), body = message_string)
 
-            trending_date = line[general_config["trending_date_index"]]
-            routing_key_number = hash(trending_date) % self.sender[1][1]
+            country = line[general_config["country_index"]]
+            hashing_string = f"{video_id}-{country}"
+            routing_key_number = hash(hashing_string) % self.sender[1][1]
             self.channel.basic_publish(exchange = self.sender[1][0], routing_key = str(routing_key_number), body = message_string)
         elif self.connection_mode == "funny_filter":
             pass
