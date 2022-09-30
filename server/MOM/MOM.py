@@ -43,7 +43,7 @@ class MOM:
                 
         elif connection_mode == "funny_filter":
             # Sending
-            self.sender = (connections["funny_filter"]["sends_to"], config["duplication_filter_input"]["computers_amount"]) # (exchange name, receiver computers amount)
+            self.sender = (connections["funny_filter"]["sends_to"], config["duplication_filter"]["computers_amount"]) # (exchange name, receiver computers amount)
             self.channel.exchange_declare(exchange = self.sender[0], exchange_type = "direct")
 
             # Receiving
@@ -53,8 +53,8 @@ class MOM:
             # Sending
             self.sender = []
             connections_array = connections["likes_filter"]["sends_to"]
-            self.sender.append((connections_array[0], config["funny_filter_input"]["computers_amount"])) # (exchange name, receiver computers amount)
-            self.sender.append((connections_array[1], config["views_sum_input"]["computers_amount"])) # (exchange name, receiver computers amount)
+            self.sender.append((connections_array[0], config["funny_filter"]["computers_amount"])) # (exchange name, receiver computers amount)
+            self.sender.append((connections_array[1], config["views_sum"]["computers_amount"])) # (exchange name, receiver computers amount)
             self.channel.exchange_declare(exchange = self.sender[0][0], exchange_type = "direct")
             self.channel.exchange_declare(exchange = self.sender[1][0], exchange_type = "direct")
             
@@ -90,7 +90,7 @@ class MOM:
 
         elif connection_mode == "trending_days_filter":
             # Sending
-            self.sender = (connections["trending_days_filter"]["sends_to"], config["countries_amount_filter_input"]["computers_amount"]) # (exchange name, receiver computers amount)
+            self.sender = (connections["trending_days_filter"]["sends_to"], config["countries_amount_filter"]["computers_amount"]) # (exchange name, receiver computers amount)
             self.channel.exchange_declare(exchange = self.sender[0], exchange_type = "direct")
 
             # Receiving
