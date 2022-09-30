@@ -14,7 +14,7 @@ class LikesFilter:
 
     def process_received_line(self, ch, method, properties, body):
         line = json.loads(body)
-        likes_amount: str = line[general_config["likes_index"]]
+        likes_amount: str = line[general_config["indexes"]["likes"]]
         if likes_amount >= local_config["likes_min"]:
             self.middleware.send(body)
 

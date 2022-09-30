@@ -15,8 +15,8 @@ class DuplicationFilter:
 
     def process_received_message(self, ch, method, properties, body):
         line = json.loads(body)
-        video_id = line[general_config["video_id_index"]]
-        country = line[general_config["video_id_index"]]
+        video_id = line[general_config["indexes"]["video_id"]]
+        country = line[general_config["indexes"]["video_id"]]
         if not (video_id in self.videos_countries):
             self.videos_countries[video_id] = set()
         current_countries_amount = len(self.videos_countries[video_id])

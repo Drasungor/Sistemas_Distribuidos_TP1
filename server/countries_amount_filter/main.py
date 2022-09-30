@@ -16,8 +16,8 @@ class CountriesAmountFilter:
 
     def process_received_message(self, ch, method, properties, body):
         line = json.loads(body)
-        video_id = line[general_config["video_id_index"]]
-        country = line[general_config["country_index"]]
+        video_id = line[general_config["indexes"]["video_id"]]
+        country = line[general_config["indexes"]["country"]]
         if not (video_id in self.videos_countries):
             self.videos_countries[video_id] = set()
         video_set = self.videos_countries[video_id]

@@ -14,7 +14,7 @@ class FunnyFilter:
 
     def process_received_line(self, ch, method, properties, body):
         line = json.loads(body)
-        tags: str = line[general_config["tags_index"]]
+        tags: str = line[general_config["indexes"]["tags"]]
         if local_config["tag"] in tags:
             self.middleware.send(body)
 

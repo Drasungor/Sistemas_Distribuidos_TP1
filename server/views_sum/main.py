@@ -18,8 +18,8 @@ class ViewsSum:
             self.middleware.send_final(json.dumps(self.aggregation_dict))
         else:
             line = json.loads(body)
-            date: str = line[general_config["trending_date_index"]]
-            view_count: str = line[general_config["views_index"]]
+            date: str = line[general_config["indexes"]["trending_date"]]
+            view_count: str = line[general_config["indexes"]["views"]]
             if not (date in self.aggregation_dict):
                 self.aggregation_dict[date] = view_count
             else:
