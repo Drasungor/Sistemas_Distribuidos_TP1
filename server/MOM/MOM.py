@@ -52,6 +52,7 @@ class MOM:
             subscribes_to_keywords = True
 
         elif connection_mode != "max_views_day":
+            # If connection_mode == "max_views_day" then
             # Sending
             # sends_to_publisher is already false
             
