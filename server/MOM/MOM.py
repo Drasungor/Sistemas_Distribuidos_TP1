@@ -34,67 +34,28 @@ class MOM:
             # Receiving
             # subscribes_to_keywords is already false
                 
-        elif connection_mode == "funny_filter":
+        elif  connection_mode in ["funny_filter", "likes_filter", "trending_days_filter"]:
             # Sending
             sends_to_publisher = True
 
             # Receiving
             subscribes_to_keywords = True
 
-        elif connection_mode == "likes_filter":
-            # Sending
-            sends_to_publisher = True
-            
-            # Receiving
-            subscribes_to_keywords = True
-
-        elif connection_mode == "duplication_filter":
+        elif connection_mode in ["duplication_filter", "views_sum", "countries_amount_filter", "thumbnails_downloader"]:
             # Sending
             # sends_to_publisher is already false
             
             # Receiving
             subscribes_to_keywords = True
 
-        elif connection_mode == "max_views_day":
-            pass
+        elif connection_mode != "max_views_day":
             # Sending
             # sends_to_publisher is already false
             
             # Receiving
             # subscribes_to_keywords is already false
 
-        elif connection_mode == "views_sum":
-            # Sending
-            # sends_to_publisher is already false
-            
-            # Receiving
-            subscribes_to_keywords = True
-
-        elif connection_mode == "trending_days_filter":
-            # Sending
-            sends_to_publisher = True
-
-            # Receiving
-            subscribes_to_keywords = True
-
-        elif connection_mode == "countries_amount_filter":
-            # Sending
-            # sends_to_publisher is already false
-            
-            # Receiving
-            subscribes_to_keywords = True
-
-        elif connection_mode == "thumbnails_downloader":
-            # Sending
-            # sends_to_publisher is already false
-            
-            
-            # Receiving
-            subscribes_to_keywords = True
-
-        else:
-            # raise error
-            pass
+            raise ValueError(f"Unexpected connection mode {connection_mode}, it should be one of the following: {connections.keys()}")
 
         if subscribes_to_keywords:
             self.channel.exchange_declare(exchange = connection_mode, exchange_type = "direct")
