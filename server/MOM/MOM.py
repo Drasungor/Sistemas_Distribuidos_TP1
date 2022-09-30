@@ -13,7 +13,7 @@ class MOM:
     def __init__(self, connection_mode: str, receiver_callback):
         self.connection = pika.BlockingConnection(pika.ConnectionParameters(local_config["broker_address"]))
         self.channel = self.connection.channel()
-        self.receiver = (None, None) # (exchange, queue)
+        self.receiver = None # exchange | queue
         self.sender = [(None, None)] # [(exchange, connections_amount)] | 
         self.connection_mode = connection_mode
         connections = local_config["connections"]
@@ -21,8 +21,8 @@ class MOM:
             raise ValueError(f"Connection mode is {connection_mode}, and should be one of the following: {connections.keys()}")
 
 
-        subscribes_to_keywords = False
-        sends_to_publisher = False
+        subscribes_to_keywords = False # reads from publisher/subscriber
+        sends_to_publisher = False # sends to publisher/subscriber
 
         # TODO: HACER QUE LOS CONFIGS SE LLAMEN IGUAL QUE LAS COLAS RECEPTORAS, ASI NO HAY QUE HARDCODEAR LOS PROCESOS A LOS QUE SE ENVIAN COSAS (EJ CANTIDAD DE PCS),
         # IGUAL TAL VEZ NO TIENE MUCHO SENTIDO PORQUE IGUAL EL RUTEO POR HASHING DEPENDE DEL DESTINO, IGUAL ESO TAMBIEN PODRIA LLEGAR A SER CONFIGURABLE
@@ -32,10 +32,7 @@ class MOM:
             sends_to_publisher = True
 
             # Receiving
-            self.receiver = ("", connections["accepter"]["receives_from"])
-            queue_name = self.receiver[1]
-            self.channel.queue_declare(queue = queue_name)
-            self.channel.basic_consume(queue=queue_name, on_message_callback=receiver_callback, auto_ack=True)
+            # subscribes_to_keywords is already false
                 
         elif connection_mode == "funny_filter":
             # Sending
@@ -53,27 +50,22 @@ class MOM:
 
         elif connection_mode == "duplication_filter":
             # Sending
-            self.sender = ("", connections["duplication_filter"]["sends_to"])
-            self.channel.queue_declare(queue = self.sender[1])
+            # sends_to_publisher is already false
             
             # Receiving
             subscribes_to_keywords = True
 
         elif connection_mode == "max_views_day":
+            pass
             # Sending
-            self.sender = ("", connections["max_views_day"]["sends_to"])
-            self.channel.queue_declare(queue = self.sender[1])
+            # sends_to_publisher is already false
             
             # Receiving
-            self.receiver = ("", connections["max_views_day"]["receives_from"])
-            queue_name = self.receiver[1]
-            self.channel.queue_declare(queue = queue_name)
-            self.channel.basic_consume(queue=queue_name, on_message_callback=receiver_callback, auto_ack=True)
+            # subscribes_to_keywords is already false
 
         elif connection_mode == "views_sum":
             # Sending
-            self.sender = ("", connections["views_sum"]["sends_to"])
-            self.channel.queue_declare(queue = self.sender[1])
+            # sends_to_publisher is already false
             
             # Receiving
             subscribes_to_keywords = True
@@ -87,16 +79,14 @@ class MOM:
 
         elif connection_mode == "countries_amount_filter":
             # Sending
-            self.sender = ("", connections["countries_amount_filter"]["sends_to"])
-            self.channel.queue_declare(queue = self.sender[1])
+            # sends_to_publisher is already false
             
             # Receiving
             subscribes_to_keywords = True
 
         elif connection_mode == "thumbnails_downloader":
             # Sending
-            self.sender = ("", connections["thumbnails_downloader"]["sends_to"])
-            self.channel.queue_declare(queue = self.sender[1])
+            # sends_to_publisher is already false
             
             
             # Receiving
@@ -107,24 +97,27 @@ class MOM:
             pass
 
         if subscribes_to_keywords:
-            self.channel.exchange_declare(exchange = connections[connection_mode]["receives_from"], exchange_type = "direct")
-            self.receiver = (connections[connection_mode]["receives_from"], "")
+            self.channel.exchange_declare(exchange = connection_mode, exchange_type = "direct")
+            self.receiver = connection_mode
             result = self.channel.queue_declare(queue='', exclusive=True)
             queue_name = result.method.queue
             self.channel.queue_bind(exchange = self.receiver[0], queue = queue_name, routing_key = os.environ["NODE_ID"])
             self.channel.queue_bind(exchange = self.receiver[0], queue = queue_name, routing_key = general_config["EOF_subscription_routing_key"])
-            self.channel.basic_consume(queue=queue_name, on_message_callback=receiver_callback, auto_ack=True)
+            self.channel.basic_consume(queue = queue_name, on_message_callback=receiver_callback, auto_ack=True)
         else:
-            pass
+            self.receiver = connection_mode
+            self.channel.queue_declare(queue = connection_mode)
+            self.channel.basic_consume(queue = connection_mode, on_message_callback=receiver_callback, auto_ack=True)
 
         if sends_to_publisher:
             self.sender = []
             connections_array = connections[connection_mode]["sends_to"]
-            for connection in connections_array:
-                self.sender.append((connection, config[connection]["computers_amount"])) # (exchange name, receiver computers amount)
-                self.channel.exchange_declare(exchange = connection, exchange_type = "direct")
+            for connecting_to in connections_array:
+                self.sender.append((connecting_to, config[connecting_to]["computers_amount"])) # (exchange name, receiver computers amount)
+                self.channel.exchange_declare(exchange = connecting_to, exchange_type = "direct")
         else:
-            pass
+            self.sender = (connections[connection_mode]["sends_to"], "")
+            self.channel.queue_declare(queue = self.sender[0])
 
     def send(self, message):
         message_string = json.dumps(message)
