@@ -14,14 +14,13 @@ class MOM:
         self.connection = pika.BlockingConnection(pika.ConnectionParameters(local_config["broker_address"]))
         self.channel = self.connection.channel()
         self.receiver = (None, None) # (exchange, queue)
-        self.sender = [(None, None)] # [(exchange, connections_amount)]
+        self.sender = [(None, None)] # [(exchange, connections_amount)] | 
         self.connection_mode = connection_mode
         connections = local_config["connections"]
         if not (connection_mode in connections):
             raise ValueError(f"Connection mode is {connection_mode}, and should be one of the following: {connections.keys()}")
 
         if connection_mode == "accepter":
-
             # Sending
             self.sender = []
             connections_array = connections["accepter"]["sends_to"]
@@ -36,7 +35,6 @@ class MOM:
             self.channel.queue_declare(queue = self.receiver[1])
                 
         elif connection_mode == "funny_filter":
-
             # Sending
 
 
@@ -67,13 +65,16 @@ class MOM:
             self.channel.basic_consume(queue=queue_name, on_message_callback=receiver_callback, auto_ack=True)
         elif connection_mode == "duplication_filter":
             # Sending
-            
+            self.sender = ("", connections["duplication_filter"]["sends_to"])
+            self.channel.queue_declare(queue = self.sender[1])
             
             # Receiving
-            pass
+
+
         elif connection_mode == "max_views_day":
             # Sending
-            
+            self.sender = ("", connections["max_views_day"]["sends_to"])
+            self.channel.queue_declare(queue = self.sender[1])
             
             # Receiving
             pass
@@ -97,6 +98,8 @@ class MOM:
             pass
         elif connection_mode == "thumbnails_downloader":
             # Sending
+            self.sender = ("", connections["thumbnails_downloader"]["sends_to"])
+            self.channel.queue_declare(queue = self.sender[1])
             
             
             # Receiving
