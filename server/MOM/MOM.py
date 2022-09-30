@@ -97,7 +97,10 @@ class MOM:
             self.channel.queue_declare(queue = self.sender[1])
             
             # Receiving
-
+            self.receiver = ("", connections["max_views_day"]["receives_from"])
+            queue_name = self.receiver[1]
+            self.channel.queue_declare(queue = queue_name)
+            self.channel.basic_consume(queue=queue_name, on_message_callback=receiver_callback, auto_ack=True)
 
         elif connection_mode == "views_sum":
             # Sending
