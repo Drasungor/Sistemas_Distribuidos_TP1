@@ -75,13 +75,21 @@ class MOM:
             self.channel.queue_bind(exchange = self.receiver[0], queue = queue_name, routing_key = os.environ["NODE_ID"])
             self.channel.queue_bind(exchange = self.receiver[0], queue = queue_name, routing_key = general_config["EOF_subscription_routing_key"])
             self.channel.basic_consume(queue=queue_name, on_message_callback=receiver_callback, auto_ack=True)
+
         elif connection_mode == "duplication_filter":
             # Sending
             self.sender = ("", connections["duplication_filter"]["sends_to"])
             self.channel.queue_declare(queue = self.sender[1])
             
             # Receiving
+            self.channel.exchange_declare(exchange = connections["likes_filter"]["receives_from"], exchange_type = "direct")
 
+            self.receiver = (connections["duplication_filter"]["receives_from"], "")
+            result = self.channel.queue_declare(queue='', exclusive=True)
+            queue_name = result.method.queue
+            self.channel.queue_bind(exchange = self.receiver[0], queue = queue_name, routing_key = os.environ["NODE_ID"])
+            self.channel.queue_bind(exchange = self.receiver[0], queue = queue_name, routing_key = general_config["EOF_subscription_routing_key"])
+            self.channel.basic_consume(queue=queue_name, on_message_callback=receiver_callback, auto_ack=True)
 
         elif connection_mode == "max_views_day":
             # Sending
