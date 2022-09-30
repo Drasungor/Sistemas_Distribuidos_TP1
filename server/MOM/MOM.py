@@ -108,7 +108,7 @@ class MOM:
             # Receiving
             self.channel.exchange_declare(exchange = connections["likes_filter"]["receives_from"], exchange_type = "direct")
 
-            self.receiver = (connections["duplication_filter"]["receives_from"], "")
+            self.receiver = (connections["views_sum"]["receives_from"], "")
             result = self.channel.queue_declare(queue='', exclusive=True)
             queue_name = result.method.queue
             self.channel.queue_bind(exchange = self.receiver[0], queue = queue_name, routing_key = os.environ["NODE_ID"])
@@ -123,7 +123,7 @@ class MOM:
             # Receiving
             self.channel.exchange_declare(exchange = connections["likes_filter"]["receives_from"], exchange_type = "direct")
 
-            self.receiver = (connections["duplication_filter"]["receives_from"], "")
+            self.receiver = (connections["trending_days_filter"]["receives_from"], "")
             result = self.channel.queue_declare(queue='', exclusive=True)
             queue_name = result.method.queue
             self.channel.queue_bind(exchange = self.receiver[0], queue = queue_name, routing_key = os.environ["NODE_ID"])
@@ -136,15 +136,15 @@ class MOM:
             self.channel.queue_declare(queue = self.sender[1])
             
             # Receiving
-            self.channel.exchange_declare(exchange = connections["likes_filter"]["receives_from"], exchange_type = "direct")
+            self.channel.exchange_declare(exchange = connections["countries_amount_filter"]["receives_from"], exchange_type = "direct")
 
-            self.receiver = (connections["duplication_filter"]["receives_from"], "")
+            self.receiver = (connections["countries_amount_filter"]["receives_from"], "")
             result = self.channel.queue_declare(queue='', exclusive=True)
             queue_name = result.method.queue
             self.channel.queue_bind(exchange = self.receiver[0], queue = queue_name, routing_key = os.environ["NODE_ID"])
             self.channel.queue_bind(exchange = self.receiver[0], queue = queue_name, routing_key = general_config["EOF_subscription_routing_key"])
             self.channel.basic_consume(queue=queue_name, on_message_callback=receiver_callback, auto_ack=True)
-                    
+
         elif connection_mode == "thumbnails_downloader":
             # Sending
             self.sender = ("", connections["thumbnails_downloader"]["sends_to"])
@@ -152,7 +152,14 @@ class MOM:
             
             
             # Receiving
+            self.channel.exchange_declare(exchange = connections["thumbnails_downloader"]["receives_from"], exchange_type = "direct")
 
+            self.receiver = (connections["thumbnails_downloader"]["receives_from"], "")
+            result = self.channel.queue_declare(queue='', exclusive=True)
+            queue_name = result.method.queue
+            self.channel.queue_bind(exchange = self.receiver[0], queue = queue_name, routing_key = os.environ["NODE_ID"])
+            self.channel.queue_bind(exchange = self.receiver[0], queue = queue_name, routing_key = general_config["EOF_subscription_routing_key"])
+            self.channel.basic_consume(queue=queue_name, on_message_callback=receiver_callback, auto_ack=True)
 
         else:
             # raise error
