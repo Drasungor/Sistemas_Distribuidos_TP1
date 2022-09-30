@@ -23,25 +23,25 @@
                 "sends_to": ["funny_filter", "views_sum"]
             },
             "funny_filter": {
-                "sends_to": "duplication_filter"
+                "sends_to": ["duplication_filter"]
             },
             "duplication_filter": {
-                "sends_to": "accepter"
+                "sends_to": ["accepter"]
             },
             "views_sum": {
-                "sends_to": "max_views_day"
+                "sends_to": ["max_views_day"]
             },
             "max_views_day": {
-                "sends_to": "accepter"
+                "sends_to": ["accepter"]
             },
             "trending_days_filter": {
-                "sends_to": "countries_amount_filter"
+                "sends_to": ["countries_amount_filter"]
             },
             "countries_amount_filter": {
-                "sends_to": "thumbnails_downloader"
+                "sends_to": ["thumbnails_downloader"]
             },
             "thumbnails_downloader": {
-                "sends_to": "accepter"
+                "sends_to": ["accepter"]
             }
         }
     },

@@ -17,7 +17,7 @@ class MOM:
         self.connection = pika.BlockingConnection(pika.ConnectionParameters(local_config["broker_address"]))
         self.channel = self.connection.channel()
         self.receiver = None # exchange | queue
-        self.sender = [(None, None)] # [(exchange, [hashing attributes], connections_amount)] | 
+        self.sender = None # [(exchange name, [hashing attributes], connections_amount)] | [queue name]
         self.connection_mode = connection_mode
         connections = local_config["connections"]
         if not (connection_mode in connections):
@@ -81,7 +81,9 @@ class MOM:
                 self.channel.exchange_declare(exchange = connecting_to, exchange_type = "direct")
         else:
             self.sender = (connections[connection_mode]["sends_to"], "")
-            self.channel.queue_declare(queue = self.sender[0])
+            for connection in connections[connection_mode]["sends_to"]:
+                self.sender.append(connection)
+                self.channel.queue_declare(queue = connection)
 
 
     def __get_hashing_key(self, line, hashing_attributes):
@@ -95,46 +97,17 @@ class MOM:
 
     def send(self, message):
         message_string = json.dumps(message)
-
         if self.sends_to_publisher:
             for receiving_end in self.sender:
                 line = message
-                hashing_string = self.__get_hashing_key(line, receiving_end[1])
+                hashing_attributes = receiving_end[1] # TODO: this should be changed for when attributes are dropped between pipeline stages
+                hashing_string = self.__get_hashing_key(line, hashing_attributes)
                 routing_key_number = hash(hashing_string) % self.sender[0][1]
                 self.channel.basic_publish(exchange = receiving_end[0], routing_key = str(routing_key_number), body = message_string)
-                pass
-
-        if self.connection_mode == "accepter":
-            line = message
-            video_id = line[general_config["video_id_index"]]
-            routing_key_number = hash(video_id) % self.sender[0][1] # It would still work with a task queue, but it is more easily configurable if everything
-                                                                    # is an exchange, and also we don't leak implementation specifications into the config file
-                                                                    # TODO: set hashing keys in config
-            self.channel.basic_publish(exchange = self.sender[0][0], routing_key = str(routing_key_number), body = message_string)
-
-            country = line[general_config["country_index"]]
-            hashing_string = f"{video_id}-{country}"
-            routing_key_number = hash(hashing_string) % self.sender[1][1]
-            self.channel.basic_publish(exchange = self.sender[1][0], routing_key = str(routing_key_number), body = message_string)
-        elif self.connection_mode == "funny_filter":
-            pass
-        elif self.connection_mode == "likes_filter":
-            pass
-        elif self.connection_mode == "duplication_filter":
-            pass
-        elif self.connection_mode == "max_views_day":
-            pass
-        elif self.connection_mode == "views_sum":
-            pass
-        elif self.connection_mode == "trending_days_filter":
-            pass
-        elif self.connection_mode == "countries_amount_filter":
-            pass
-        elif self.connection_mode == "thumbnails_downloader":
-            pass
         else:
-            # raise error
-            pass
+            for receiving_end in self.sender:
+                self.channel.basic_publish(exchange = "", routing_key = receiving_end, body = message_string)
+
 
     def send_final(self, message):
         pass
