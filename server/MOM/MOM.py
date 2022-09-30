@@ -9,12 +9,15 @@ with open(config_file_path, "r") as config_file:
 general_config = config["general"]
 local_config = config["MOM"]
 
+
+
+
 class MOM:
     def __init__(self, connection_mode: str, receiver_callback):
         self.connection = pika.BlockingConnection(pika.ConnectionParameters(local_config["broker_address"]))
         self.channel = self.connection.channel()
         self.receiver = None # exchange | queue
-        self.sender = [(None, None)] # [(exchange, connections_amount)] | 
+        self.sender = [(None, None)] # [(exchange, [hashing attributes], connections_amount)] | 
         self.connection_mode = connection_mode
         connections = local_config["connections"]
         if not (connection_mode in connections):
@@ -22,21 +25,21 @@ class MOM:
 
 
         subscribes_to_keywords = False # reads from publisher/subscriber
-        sends_to_publisher = False # sends to publisher/subscriber
+        self.sends_to_publisher = False # sends to publisher/subscriber
 
         # TODO: HACER QUE LOS CONFIGS SE LLAMEN IGUAL QUE LAS COLAS RECEPTORAS, ASI NO HAY QUE HARDCODEAR LOS PROCESOS A LOS QUE SE ENVIAN COSAS (EJ CANTIDAD DE PCS),
         # IGUAL TAL VEZ NO TIENE MUCHO SENTIDO PORQUE IGUAL EL RUTEO POR HASHING DEPENDE DEL DESTINO, IGUAL ESO TAMBIEN PODRIA LLEGAR A SER CONFIGURABLE
 
         if connection_mode == "accepter":
             # Sending
-            sends_to_publisher = True
+            self.sends_to_publisher = True
 
             # Receiving
             # subscribes_to_keywords is already false
                 
         elif  connection_mode in ["funny_filter", "likes_filter", "trending_days_filter"]:
             # Sending
-            sends_to_publisher = True
+            self.sends_to_publisher = True
 
             # Receiving
             subscribes_to_keywords = True
@@ -70,18 +73,37 @@ class MOM:
             self.channel.queue_declare(queue = connection_mode)
             self.channel.basic_consume(queue = connection_mode, on_message_callback=receiver_callback, auto_ack=True)
 
-        if sends_to_publisher:
+        if self.sends_to_publisher:
             self.sender = []
             connections_array = connections[connection_mode]["sends_to"]
             for connecting_to in connections_array:
-                self.sender.append((connecting_to, config[connecting_to]["computers_amount"])) # (exchange name, receiver computers amount)
+                self.sender.append((connecting_to, config[connecting_to]["hashed_by"], config[connecting_to]["computers_amount"])) # (exchange name, [hashing attributes], receiver computers amount)
                 self.channel.exchange_declare(exchange = connecting_to, exchange_type = "direct")
         else:
             self.sender = (connections[connection_mode]["sends_to"], "")
             self.channel.queue_declare(queue = self.sender[0])
 
+
+    def __get_hashing_key(self, line, hashing_attributes):
+        indexes_object = general_config["indexes"]
+        hashing_attributes_iterator = iter(hashing_attributes)
+        hashing_string = line[indexes_object[next(hashing_attributes_iterator)]]
+        for hashing_attribute in hashing_attributes_iterator: # Extends to more than 2 receiving ends
+            aux = line[indexes_object[hashing_attribute]]
+            hashing_string += f"-{aux}"
+        return hashing_string
+
     def send(self, message):
         message_string = json.dumps(message)
+
+        if self.sends_to_publisher:
+            for receiving_end in self.sender:
+                line = message
+                hashing_string = self.__get_hashing_key(line, receiving_end[1])
+                routing_key_number = hash(hashing_string) % self.sender[0][1]
+                self.channel.basic_publish(exchange = receiving_end[0], routing_key = str(routing_key_number), body = message_string)
+                pass
+
         if self.connection_mode == "accepter":
             line = message
             video_id = line[general_config["video_id_index"]]
