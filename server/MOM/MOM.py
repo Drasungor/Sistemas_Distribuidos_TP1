@@ -22,18 +22,14 @@ class MOM:
 
 
         subscribes_to_keywords = False
+        sends_to_publisher = False
 
         # TODO: HACER QUE LOS CONFIGS SE LLAMEN IGUAL QUE LAS COLAS RECEPTORAS, ASI NO HAY QUE HARDCODEAR LOS PROCESOS A LOS QUE SE ENVIAN COSAS (EJ CANTIDAD DE PCS),
         # IGUAL TAL VEZ NO TIENE MUCHO SENTIDO PORQUE IGUAL EL RUTEO POR HASHING DEPENDE DEL DESTINO, IGUAL ESO TAMBIEN PODRIA LLEGAR A SER CONFIGURABLE
 
         if connection_mode == "accepter":
             # Sending
-            self.sender = []
-            connections_array = connections["accepter"]["sends_to"]
-            self.sender.append((connections_array[0], config["likes_filter"]["computers_amount"])) # (exchange name, receiver computers amount)
-            self.sender.append((connections_array[1], config["trending_days_filter"]["computers_amount"])) # (exchange name, receiver computers amount)
-            self.channel.exchange_declare(exchange = self.sender[0][0], exchange_type = "direct")
-            self.channel.exchange_declare(exchange = self.sender[1][0], exchange_type = "direct")
+            sends_to_publisher = True
 
             # Receiving
             self.receiver = ("", connections["accepter"]["receives_from"])
@@ -43,20 +39,14 @@ class MOM:
                 
         elif connection_mode == "funny_filter":
             # Sending
-            self.sender = (connections["funny_filter"]["sends_to"], config["duplication_filter"]["computers_amount"]) # (exchange name, receiver computers amount)
-            self.channel.exchange_declare(exchange = self.sender[0], exchange_type = "direct")
+            sends_to_publisher = True
 
             # Receiving
             subscribes_to_keywords = True
 
         elif connection_mode == "likes_filter":
             # Sending
-            self.sender = []
-            connections_array = connections["likes_filter"]["sends_to"]
-            self.sender.append((connections_array[0], config["funny_filter"]["computers_amount"])) # (exchange name, receiver computers amount)
-            self.sender.append((connections_array[1], config["views_sum"]["computers_amount"])) # (exchange name, receiver computers amount)
-            self.channel.exchange_declare(exchange = self.sender[0][0], exchange_type = "direct")
-            self.channel.exchange_declare(exchange = self.sender[1][0], exchange_type = "direct")
+            sends_to_publisher = True
             
             # Receiving
             subscribes_to_keywords = True
@@ -90,8 +80,7 @@ class MOM:
 
         elif connection_mode == "trending_days_filter":
             # Sending
-            self.sender = (connections["trending_days_filter"]["sends_to"], config["countries_amount_filter"]["computers_amount"]) # (exchange name, receiver computers amount)
-            self.channel.exchange_declare(exchange = self.sender[0], exchange_type = "direct")
+            sends_to_publisher = True
 
             # Receiving
             subscribes_to_keywords = True
@@ -125,6 +114,15 @@ class MOM:
             self.channel.queue_bind(exchange = self.receiver[0], queue = queue_name, routing_key = os.environ["NODE_ID"])
             self.channel.queue_bind(exchange = self.receiver[0], queue = queue_name, routing_key = general_config["EOF_subscription_routing_key"])
             self.channel.basic_consume(queue=queue_name, on_message_callback=receiver_callback, auto_ack=True)
+        else:
+            pass
+
+        if sends_to_publisher:
+            self.sender = []
+            connections_array = connections[connection_mode]["sends_to"]
+            for connection in connections_array:
+                self.sender.append((connection, config[connection]["computers_amount"])) # (exchange name, receiver computers amount)
+                self.channel.exchange_declare(exchange = connection, exchange_type = "direct")
         else:
             pass
 

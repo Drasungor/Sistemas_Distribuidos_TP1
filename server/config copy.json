@@ -15,31 +15,40 @@
         "broker_address": "rabbitmq",
         "connections": {
             "accepter": {
-                "sends_to": ["likes_filter", "trending_days_filter"]
+                "receives_from": "output_receiver",
+                "sends_to": ["likes_filter_input", "trending_days_filter_input"]
             },
             "likes_filter": {
-                "sends_to": ["funny_filter", "views_sum"]
+                "receives_from": "likes_filter_input",
+                "sends_to": ["funny_filter_input", "views_sum_input"]
             },
             "funny_filter": {
-                "sends_to": "duplication_filter"
+                "receives_from": "funny_filter_input",
+                "sends_to": "duplication_filter_input"
             },
             "duplication_filter": {
-                "sends_to": "accepter"
+                "receives_from": "duplication_filter_input",
+                "sends_to": "output_receiver"
             },
             "views_sum": {
-                "sends_to": "max_views_day"
+                "receives_from": "views_sum_input",
+                "sends_to": "views_processor_input"
             },
             "max_views_day": {
-                "sends_to": "accepter"
+                "receives_from": "views_processor_input",
+                "sends_to": "output_receiver"
             },
             "trending_days_filter": {
-                "sends_to": "countries_amount_filter"
+                "receives_from": "trending_days_filter_input",
+                "sends_to": "countries_amount_filter_input"
             },
             "countries_amount_filter": {
-                "sends_to": "thumbnails_downloader"
+                "receives_from": "countries_amount_filter_input",
+                "sends_to": "thumbnails_downloader_input"
             },
             "thumbnails_downloader": {
-                "sends_to": "accepter"
+                "receives_from": "thumbnails_downloader_input",
+                "sends_to": "output_receiver"
             }
         }
     },
