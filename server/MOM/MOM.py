@@ -21,6 +21,8 @@ class MOM:
             raise ValueError(f"Connection mode is {connection_mode}, and should be one of the following: {connections.keys()}")
 
 
+        subscribes_to_keywords = False
+
         # TODO: HACER QUE LOS CONFIGS SE LLAMEN IGUAL QUE LAS COLAS RECEPTORAS, ASI NO HAY QUE HARDCODEAR LOS PROCESOS A LOS QUE SE ENVIAN COSAS (EJ CANTIDAD DE PCS),
         # IGUAL TAL VEZ NO TIENE MUCHO SENTIDO PORQUE IGUAL EL RUTEO POR HASHING DEPENDE DEL DESTINO, IGUAL ESO TAMBIEN PODRIA LLEGAR A SER CONFIGURABLE
 
@@ -45,15 +47,7 @@ class MOM:
             self.channel.exchange_declare(exchange = self.sender[0], exchange_type = "direct")
 
             # Receiving
-            self.channel.exchange_declare(exchange = connections["funny_filter"]["receives_from"], exchange_type = "direct")
-
-            self.receiver = (connections["funny_filter"]["receives_from"], "")
-            result = self.channel.queue_declare(queue='', exclusive=True)
-            queue_name = result.method.queue
-            self.channel.queue_bind(exchange = self.receiver[0], queue = queue_name, routing_key = os.environ["NODE_ID"])
-            self.channel.queue_bind(exchange = self.receiver[0], queue = queue_name, routing_key = general_config["EOF_subscription_routing_key"])
-            self.channel.basic_consume(queue=queue_name, on_message_callback=receiver_callback, auto_ack=True)
-            # TODO: assign sender
+            subscribes_to_keywords = True
 
         elif connection_mode == "likes_filter":
             # Sending
@@ -65,14 +59,7 @@ class MOM:
             self.channel.exchange_declare(exchange = self.sender[1][0], exchange_type = "direct")
             
             # Receiving
-            self.channel.exchange_declare(exchange = connections["likes_filter"]["receives_from"], exchange_type = "direct")
-
-            self.receiver = (connections["likes_filter"]["receives_from"], "")
-            result = self.channel.queue_declare(queue='', exclusive=True)
-            queue_name = result.method.queue
-            self.channel.queue_bind(exchange = self.receiver[0], queue = queue_name, routing_key = os.environ["NODE_ID"])
-            self.channel.queue_bind(exchange = self.receiver[0], queue = queue_name, routing_key = general_config["EOF_subscription_routing_key"])
-            self.channel.basic_consume(queue=queue_name, on_message_callback=receiver_callback, auto_ack=True)
+            subscribes_to_keywords = True
 
         elif connection_mode == "duplication_filter":
             # Sending
@@ -80,14 +67,7 @@ class MOM:
             self.channel.queue_declare(queue = self.sender[1])
             
             # Receiving
-            self.channel.exchange_declare(exchange = connections["likes_filter"]["receives_from"], exchange_type = "direct")
-
-            self.receiver = (connections["duplication_filter"]["receives_from"], "")
-            result = self.channel.queue_declare(queue='', exclusive=True)
-            queue_name = result.method.queue
-            self.channel.queue_bind(exchange = self.receiver[0], queue = queue_name, routing_key = os.environ["NODE_ID"])
-            self.channel.queue_bind(exchange = self.receiver[0], queue = queue_name, routing_key = general_config["EOF_subscription_routing_key"])
-            self.channel.basic_consume(queue=queue_name, on_message_callback=receiver_callback, auto_ack=True)
+            subscribes_to_keywords = True
 
         elif connection_mode == "max_views_day":
             # Sending
@@ -106,14 +86,7 @@ class MOM:
             self.channel.queue_declare(queue = self.sender[1])
             
             # Receiving
-            self.channel.exchange_declare(exchange = connections["likes_filter"]["receives_from"], exchange_type = "direct")
-
-            self.receiver = (connections["views_sum"]["receives_from"], "")
-            result = self.channel.queue_declare(queue='', exclusive=True)
-            queue_name = result.method.queue
-            self.channel.queue_bind(exchange = self.receiver[0], queue = queue_name, routing_key = os.environ["NODE_ID"])
-            self.channel.queue_bind(exchange = self.receiver[0], queue = queue_name, routing_key = general_config["EOF_subscription_routing_key"])
-            self.channel.basic_consume(queue=queue_name, on_message_callback=receiver_callback, auto_ack=True)
+            subscribes_to_keywords = True
 
         elif connection_mode == "trending_days_filter":
             # Sending
@@ -121,14 +94,7 @@ class MOM:
             self.channel.exchange_declare(exchange = self.sender[0], exchange_type = "direct")
 
             # Receiving
-            self.channel.exchange_declare(exchange = connections["likes_filter"]["receives_from"], exchange_type = "direct")
-
-            self.receiver = (connections["trending_days_filter"]["receives_from"], "")
-            result = self.channel.queue_declare(queue='', exclusive=True)
-            queue_name = result.method.queue
-            self.channel.queue_bind(exchange = self.receiver[0], queue = queue_name, routing_key = os.environ["NODE_ID"])
-            self.channel.queue_bind(exchange = self.receiver[0], queue = queue_name, routing_key = general_config["EOF_subscription_routing_key"])
-            self.channel.basic_consume(queue=queue_name, on_message_callback=receiver_callback, auto_ack=True)
+            subscribes_to_keywords = True
 
         elif connection_mode == "countries_amount_filter":
             # Sending
@@ -136,14 +102,7 @@ class MOM:
             self.channel.queue_declare(queue = self.sender[1])
             
             # Receiving
-            self.channel.exchange_declare(exchange = connections["countries_amount_filter"]["receives_from"], exchange_type = "direct")
-
-            self.receiver = (connections["countries_amount_filter"]["receives_from"], "")
-            result = self.channel.queue_declare(queue='', exclusive=True)
-            queue_name = result.method.queue
-            self.channel.queue_bind(exchange = self.receiver[0], queue = queue_name, routing_key = os.environ["NODE_ID"])
-            self.channel.queue_bind(exchange = self.receiver[0], queue = queue_name, routing_key = general_config["EOF_subscription_routing_key"])
-            self.channel.basic_consume(queue=queue_name, on_message_callback=receiver_callback, auto_ack=True)
+            subscribes_to_keywords = True
 
         elif connection_mode == "thumbnails_downloader":
             # Sending
@@ -152,19 +111,22 @@ class MOM:
             
             
             # Receiving
-            self.channel.exchange_declare(exchange = connections["thumbnails_downloader"]["receives_from"], exchange_type = "direct")
-
-            self.receiver = (connections["thumbnails_downloader"]["receives_from"], "")
-            result = self.channel.queue_declare(queue='', exclusive=True)
-            queue_name = result.method.queue
-            self.channel.queue_bind(exchange = self.receiver[0], queue = queue_name, routing_key = os.environ["NODE_ID"])
-            self.channel.queue_bind(exchange = self.receiver[0], queue = queue_name, routing_key = general_config["EOF_subscription_routing_key"])
-            self.channel.basic_consume(queue=queue_name, on_message_callback=receiver_callback, auto_ack=True)
+            subscribes_to_keywords = True
 
         else:
             # raise error
             pass
 
+        if subscribes_to_keywords:
+            self.channel.exchange_declare(exchange = connections[connection_mode]["receives_from"], exchange_type = "direct")
+            self.receiver = (connections[connection_mode]["receives_from"], "")
+            result = self.channel.queue_declare(queue='', exclusive=True)
+            queue_name = result.method.queue
+            self.channel.queue_bind(exchange = self.receiver[0], queue = queue_name, routing_key = os.environ["NODE_ID"])
+            self.channel.queue_bind(exchange = self.receiver[0], queue = queue_name, routing_key = general_config["EOF_subscription_routing_key"])
+            self.channel.basic_consume(queue=queue_name, on_message_callback=receiver_callback, auto_ack=True)
+        else:
+            pass
 
     def send(self, message):
         message_string = json.dumps(message)
