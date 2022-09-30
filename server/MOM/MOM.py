@@ -20,22 +20,29 @@ class MOM:
         if not (connection_mode in connections):
             raise ValueError(f"Connection mode is {connection_mode}, and should be one of the following: {connections.keys()}")
 
+
+        # TODO: HACER QUE LOS CONFIGS SE LLAMEN IGUAL QUE LAS COLAS RECEPTORAS, ASI NO HAY QUE HARDCODEAR LOS PROCESOS A LOS QUE SE ENVIAN COSAS (EJ CANTIDAD DE PCS),
+        # IGUAL TAL VEZ NO TIENE MUCHO SENTIDO PORQUE IGUAL EL RUTEO POR HASHING DEPENDE DEL DESTINO, IGUAL ESO TAMBIEN PODRIA LLEGAR A SER CONFIGURABLE
+
         if connection_mode == "accepter":
             # Sending
             self.sender = []
             connections_array = connections["accepter"]["sends_to"]
             self.sender.append((connections_array[0], config["likes_filter"]["computers_amount"])) # (exchange name, receiver computers amount)
             self.sender.append((connections_array[1], config["trending_days_filter"]["computers_amount"])) # (exchange name, receiver computers amount)
-
             self.channel.exchange_declare(exchange = self.sender[0][0], exchange_type = "direct")
             self.channel.exchange_declare(exchange = self.sender[1][0], exchange_type = "direct")
 
             # Receiving
             self.receiver = ("", connections["accepter"]["receives_from"])
-            self.channel.queue_declare(queue = self.receiver[1])
+            queue_name = self.receiver[1]
+            self.channel.queue_declare(queue = queue_name)
+            self.channel.basic_consume(queue=queue_name, on_message_callback=receiver_callback, auto_ack=True)
                 
         elif connection_mode == "funny_filter":
             # Sending
+            self.sender = (connections["funny_filter"]["sends_to"], config["duplication_filter_input"]["computers_amount"]) # (exchange name, receiver computers amount)
+            self.channel.exchange_declare(exchange = self.sender[0], exchange_type = "direct")
 
 
 
@@ -52,7 +59,12 @@ class MOM:
 
         elif connection_mode == "likes_filter":
             # Sending
-            
+            self.sender = []
+            connections_array = connections["likes_filter"]["sends_to"]
+            self.sender.append((connections_array[0], config["funny_filter_input"]["computers_amount"])) # (exchange name, receiver computers amount)
+            self.sender.append((connections_array[1], config["views_sum_input"]["computers_amount"])) # (exchange name, receiver computers amount)
+            self.channel.exchange_declare(exchange = self.sender[0][0], exchange_type = "direct")
+            self.channel.exchange_declare(exchange = self.sender[1][0], exchange_type = "direct")
             
             # Receiving
             self.channel.exchange_declare(exchange = connections["likes_filter"]["receives_from"], exchange_type = "direct")
@@ -77,7 +89,8 @@ class MOM:
             self.channel.queue_declare(queue = self.sender[1])
             
             # Receiving
-            pass
+
+
         elif connection_mode == "views_sum":
             # Sending
             
@@ -103,7 +116,8 @@ class MOM:
             
             
             # Receiving
-            pass
+
+
         else:
             # raise error
             pass
