@@ -44,8 +44,6 @@ class MOM:
             self.sender = (connections["funny_filter"]["sends_to"], config["duplication_filter_input"]["computers_amount"]) # (exchange name, receiver computers amount)
             self.channel.exchange_declare(exchange = self.sender[0], exchange_type = "direct")
 
-
-
             # Receiving
             self.channel.exchange_declare(exchange = connections["funny_filter"]["receives_from"], exchange_type = "direct")
 
@@ -119,16 +117,34 @@ class MOM:
 
         elif connection_mode == "trending_days_filter":
             # Sending
-            
-            
+            self.sender = (connections["trending_days_filter"]["sends_to"], config["countries_amount_filter_input"]["computers_amount"]) # (exchange name, receiver computers amount)
+            self.channel.exchange_declare(exchange = self.sender[0], exchange_type = "direct")
+
             # Receiving
-            pass
+            self.channel.exchange_declare(exchange = connections["likes_filter"]["receives_from"], exchange_type = "direct")
+
+            self.receiver = (connections["duplication_filter"]["receives_from"], "")
+            result = self.channel.queue_declare(queue='', exclusive=True)
+            queue_name = result.method.queue
+            self.channel.queue_bind(exchange = self.receiver[0], queue = queue_name, routing_key = os.environ["NODE_ID"])
+            self.channel.queue_bind(exchange = self.receiver[0], queue = queue_name, routing_key = general_config["EOF_subscription_routing_key"])
+            self.channel.basic_consume(queue=queue_name, on_message_callback=receiver_callback, auto_ack=True)
+
         elif connection_mode == "countries_amount_filter":
             # Sending
-            
+            self.sender = ("", connections["countries_amount_filter"]["sends_to"])
+            self.channel.queue_declare(queue = self.sender[1])
             
             # Receiving
-            pass
+            self.channel.exchange_declare(exchange = connections["likes_filter"]["receives_from"], exchange_type = "direct")
+
+            self.receiver = (connections["duplication_filter"]["receives_from"], "")
+            result = self.channel.queue_declare(queue='', exclusive=True)
+            queue_name = result.method.queue
+            self.channel.queue_bind(exchange = self.receiver[0], queue = queue_name, routing_key = os.environ["NODE_ID"])
+            self.channel.queue_bind(exchange = self.receiver[0], queue = queue_name, routing_key = general_config["EOF_subscription_routing_key"])
+            self.channel.basic_consume(queue=queue_name, on_message_callback=receiver_callback, auto_ack=True)
+                    
         elif connection_mode == "thumbnails_downloader":
             # Sending
             self.sender = ("", connections["thumbnails_downloader"]["sends_to"])
