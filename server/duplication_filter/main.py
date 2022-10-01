@@ -15,12 +15,17 @@ class DuplicationFilter:
 
     def process_received_message(self, ch, method, properties, body):
         line = json.loads(body)
-        video_id = line[general_config["indexes"]["video_id"]]
-        country = line[general_config["indexes"]["video_id"]]
-        if not (video_id in self.videos_countries):
-            self.videos_countries[video_id] = set()
-        current_countries_amount = len(self.videos_countries[video_id])
-        self.videos_countries[video_id].add()
+
+        if method.routing_key == general_config["EOF_subscription_routing_key"]:
+            # TODO: IMPLEMENT THIS
+            pass
+        else:
+            video_id = line[general_config["indexes"]["video_id"]]
+            country = line[general_config["indexes"]["video_id"]]
+            if not (video_id in self.videos_countries):
+                self.videos_countries[video_id] = set()
+            current_countries_amount = len(self.videos_countries[video_id])
+            self.videos_countries[video_id].add()
 
     def start_received_messages_processing(self):
         self.middleware.start_received_messages_processing()

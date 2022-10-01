@@ -16,16 +16,22 @@ class CountriesAmountFilter:
 
     def process_received_message(self, ch, method, properties, body):
         line = json.loads(body)
-        video_id = line[general_config["indexes"]["video_id"]]
-        country = line[general_config["indexes"]["country"]]
-        if not (video_id in self.videos_countries):
-            self.videos_countries[video_id] = set()
-        video_set = self.videos_countries[video_id]
-        previous_countries_amount = len(video_set)
-        video_set.add(country)
-        current_countries_amount = len(video_set)
-        if (current_countries_amount == self.countries_amount) and (previous_countries_amount != current_countries_amount):
-            self.middleware.send(video_id)
+
+
+        if method.routing_key == general_config["EOF_subscription_routing_key"]:
+            # TODO: IMPLEMENT THIS
+            pass
+        else:
+            video_id = line[general_config["indexes"]["video_id"]]
+            country = line[general_config["indexes"]["country"]]
+            if not (video_id in self.videos_countries):
+                self.videos_countries[video_id] = set()
+            video_set = self.videos_countries[video_id]
+            previous_countries_amount = len(video_set)
+            video_set.add(country)
+            current_countries_amount = len(video_set)
+            if (current_countries_amount == self.countries_amount) and (previous_countries_amount != current_countries_amount):
+                self.middleware.send(video_id)
 
     def start_received_messages_processing(self):
         self.middleware.start_received_messages_processing()

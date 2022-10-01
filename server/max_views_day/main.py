@@ -18,7 +18,7 @@ class MaxViewsDay:
         # iterate received array and update max day
         # If cant finished received = pcs views sum amount
         # send max day
-        if method.routing_key == "-1": # TODO: check if this condition is correct
+        if method.routing_key == general_config["EOF_subscription_routing_key"]: # TODO: check if this condition is correct
             # Send current max
             # Check if also the last views sum is sent in this message
             final_message_dict = { "type": "max_views_day", "max_day": self.max_views_date }

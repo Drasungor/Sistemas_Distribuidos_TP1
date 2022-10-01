@@ -14,9 +14,13 @@ class FunnyFilter:
 
     def process_received_line(self, ch, method, properties, body):
         line = json.loads(body)
-        tags: str = line[general_config["indexes"]["tags"]]
-        if local_config["tag"] in tags:
-            self.middleware.send(body)
+        if method.routing_key == general_config["EOF_subscription_routing_key"]:
+            # TODO: IMPLEMENT THIS
+            pass
+        else:
+            tags: str = line[general_config["indexes"]["tags"]]
+            if local_config["tag"] in tags:
+                self.middleware.send(body)
 
     def start_received_messages_processing(self):
         self.middleware.start_received_messages_processing()

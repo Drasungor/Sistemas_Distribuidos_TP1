@@ -14,7 +14,7 @@ class ViewsSum:
         self.aggregation_dict = {}
 
     def process_received_message(self, ch, method, properties, body):
-        if method.routing_key == "-1":
+        if method.routing_key == general_config["EOF_subscription_routing_key"]:
             self.middleware.send_final(json.dumps(self.aggregation_dict))
         else:
             line = json.loads(body)

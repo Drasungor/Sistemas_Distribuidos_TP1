@@ -14,7 +14,12 @@ class TrendingDaysFilter:
         self.aggregation_dict = {}
 
     def process_received_message(self, ch, method, properties, body):
-        pass
+
+        if method.routing_key == general_config["EOF_subscription_routing_key"]:
+            # TODO: IMPLEMENT THIS
+            pass
+        else:
+            pass
         # # line = json.loads(body)
         # # date: str = line[general_config["trending_date_index"]]
         # # view_count: str = line[general_config["views_index"]]
