@@ -20,14 +20,15 @@ class MaxViewsDay:
         self.previous_stage_size = config[previous_stage]["computers_amount"]
 
     def process_received_message(self, ch, method, properties, body):
-        if method.routing_key == general_config["general_subscription_routing_key"]: # TODO: check if this condition is correct
+        received_message = json.loads(body)
+        if received_message == None: # TODO: check if this condition is correct
             self.received_eofs += 1
             if self.received_eofs == self.previous_stage_size:
                 final_message_dict = { "type": cluster_type, "max_day": self.max_views_date }
                 self.middleware.send(final_message_dict)
                 self.middleware.send_general(None)
         else:
-            daily_views_dict = json.loads(body)
+            daily_views_dict = received_message
             for day in daily_views_dict:
                 if daily_views_dict[day] > self.max_views_date[1]:
                     self.max_views_date = (day, daily_views_dict[day])
