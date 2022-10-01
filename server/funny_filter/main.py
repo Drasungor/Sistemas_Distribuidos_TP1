@@ -1,21 +1,29 @@
 import json
 from MOM.MOM import MOM
 
+cluster_type = "funny_filter"
+
 config_file_path = "/config/config.json"
 config = None
 with open(config_file_path, "r") as config_file:
     config = json.load(open(config_file_path, "r"))
 general_config = config["general"]
-local_config = config["funny_filter"]
+local_config = config[cluster_type]
 
 class FunnyFilter:
     def __init__(self):
-        self.middleware = MOM("funny_filter", self.process_received_line)
+        self.middleware = MOM(cluster_type, self.process_received_line)
+        self.received_eofs = 0
+        
+        previous_stage = local_config["receives_from"]
+        self.previous_stage_size = config[previous_stage]["computers_amount"]
 
     def process_received_line(self, ch, method, properties, body):
         line = json.loads(body)
         if method.routing_key == general_config["EOF_subscription_routing_key"]:
-            self.middleware.send_final(body)
+            self.received_eofs += 1
+            if self.received_eofs == self.previous_stage_size:
+                self.middleware.send_final(body)
         else:
             tags: str = line[general_config["indexes"]["tags"]]
             if local_config["tag"] in tags:
