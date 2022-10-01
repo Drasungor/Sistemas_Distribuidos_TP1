@@ -1,6 +1,7 @@
 import json
 from MOM.MOM import MOM
 import requests
+import base64
 
 cluster_type = "thumbnails_downloader"
 
@@ -29,7 +30,7 @@ class MaxViewsDay:
             line = json.loads(body)
             video_id = line[general_config["indexes"]["video_id"]]
             img_data = requests.get(f"https://img.youtube.com/vi/{video_id}/0.jpg").content
-            self.middleware.send({ "type": cluster_type, "img_data": img_data })
+            self.middleware.send({ "type": cluster_type, "img_data": base64.b64encode(img_data) })
 
     def start_received_messages_processing(self):
         self.middleware.start_received_messages_processing()
