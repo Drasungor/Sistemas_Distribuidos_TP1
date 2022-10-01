@@ -38,7 +38,7 @@ def handle_connection(connections_queue: mp.Queue):
                     middleware.send_line(line)
                     pass
                     # print(f"Category: {line[0]}")
-
+        middleware.send_final(None)
         # BORRAR
         print(f"Read lines: {read_lines}")
 
@@ -66,15 +66,13 @@ def main():
     server_socket.bind(('', local_config["bound_port"]))
     server_socket.listen(local_config["listen_backlog"])
 
-    print("BORRAR Voy a aceptar")
     first_connection, _ = server_socket.accept()
-    print("BORRAR Acepte")
 
     connections_data = read_json(first_connection)
-    print(f"BORRAR Lei json: {connections_data}")
 
 
     incoming_connections = connections_data["connections_amount"]
+    incoming_files_amount  = connections_data["files_amount"]
     processes_amount = min([local_config["processes_amount"], mp.cpu_count(), incoming_connections])
     child_processes: "list[mp.Queue]" = []
     for _ in range(processes_amount):
@@ -87,6 +85,9 @@ def main():
     
     for _ in range(len(child_processes)):
         accepter_queue.put(None)
+
+    # start receiving MOM messages
+
     accepter_queue.close()
     accepter_queue.join_thread()
     for i in range(len(child_processes)):
