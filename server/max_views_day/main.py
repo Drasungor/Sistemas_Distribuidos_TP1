@@ -25,7 +25,7 @@ class MaxViewsDay:
             if self.received_eofs == self.previous_stage_size:
                 final_message_dict = { "type": cluster_type, "max_day": self.max_views_date }
                 self.middleware.send(final_message_dict)
-                self.middleware.send_final(None)
+                self.middleware.send_general(None)
         else:
             daily_views_dict = json.loads(body)
             for day in daily_views_dict:

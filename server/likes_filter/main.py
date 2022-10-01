@@ -23,7 +23,7 @@ class LikesFilter:
         if method.routing_key == general_config["general_subscription_routing_key"]:
             self.received_eofs += 1
             if self.received_eofs == self.previous_stage_size:
-                self.middleware.send_final(body)
+                self.middleware.send_general(body)
         else:
             likes_amount: str = line[general_config["indexes"]["likes"]]
             if likes_amount >= local_config["likes_min"]:

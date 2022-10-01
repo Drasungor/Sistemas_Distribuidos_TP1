@@ -40,7 +40,7 @@ def handle_connection(connections_queue: mp.Queue, middleware: MOM):
                     middleware.send_line(line)
                     pass
                     # print(f"Category: {line[0]}")
-        middleware.send_final(None)
+        middleware.send_general(None)
         # BORRAR
         print(f"Read lines: {read_lines}")
 

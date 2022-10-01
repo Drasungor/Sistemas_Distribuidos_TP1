@@ -25,7 +25,7 @@ class DuplicationFilter:
         if method.routing_key == general_config["general_subscription_routing_key"]:
             self.received_eofs += 1
             if self.received_eofs == self.previous_stage_size:
-                self.middleware.send_final(None)
+                self.middleware.send_general(None)
         else:
             video_id = line[general_config["indexes"]["video_id"]]
             title = line[general_config["indexes"]["title"]]

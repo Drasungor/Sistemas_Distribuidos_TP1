@@ -23,7 +23,7 @@ class FunnyFilter:
         if method.routing_key == general_config["general_subscription_routing_key"]:
             self.received_eofs += 1
             if self.received_eofs == self.previous_stage_size:
-                self.middleware.send_final(None)
+                self.middleware.send_general(None)
         else:
             tags: str = line[general_config["indexes"]["tags"]]
             if local_config["tag"] in tags:
