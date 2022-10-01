@@ -22,7 +22,7 @@ class MaxViewsDay:
         self.previous_stage_size = config[previous_stage]["computers_amount"]
 
     def process_received_message(self, ch, method, properties, body):
-        if method.routing_key == general_config["EOF_subscription_routing_key"]: # TODO: check if this condition is correct
+        if method.routing_key == general_config["general_subscription_routing_key"]: # TODO: check if this condition is correct
             self.received_eofs += 1
             if self.received_eofs == self.previous_stage_size:
                 self.middleware.send_final(None)

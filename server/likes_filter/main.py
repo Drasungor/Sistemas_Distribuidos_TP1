@@ -20,7 +20,7 @@ class LikesFilter:
 
     def process_received_line(self, ch, method, properties, body):
         line = json.loads(body)
-        if method.routing_key == general_config["EOF_subscription_routing_key"]:
+        if method.routing_key == general_config["general_subscription_routing_key"]:
             self.received_eofs += 1
             if self.received_eofs == self.previous_stage_size:
                 self.middleware.send_final(body)

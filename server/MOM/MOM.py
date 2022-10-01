@@ -110,11 +110,11 @@ class MOM:
                 self.channel.basic_publish(exchange = "", routing_key = receiving_end, body = message_string)
 
 
-    def send_final(self, message):
+    def send_general(self, message):
         message_string = json.dumps(message)
         if self.sends_to_publisher:
             for receiving_end in self.sender:
-                self.channel.basic_publish(exchange = receiving_end[0], routing_key = general_config["EOF_subscription_routing_key"], body = message_string)
+                self.channel.basic_publish(exchange = receiving_end[0], routing_key = general_config["general_subscription_routing_key"], body = message_string)
         else:
             for receiving_end in self.sender:
                 self.channel.basic_publish(exchange = "", routing_key = receiving_end, body = message_string)

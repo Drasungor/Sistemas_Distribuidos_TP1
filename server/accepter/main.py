@@ -3,12 +3,14 @@ import multiprocessing as mp
 import json
 from MOM.MOM import MOM
 
+cluster_type = "accepter"
+
 config_file_path = "/config/config.json"
 config = None
 with open(config_file_path, "r") as config_file:
     config = json.load(open(config_file_path, "r"))
 general_config = config["general"]
-local_config = config["accepter"]
+local_config = config[cluster_type]
 
 class ClosedSocket(Exception):
 	pass
@@ -16,8 +18,8 @@ class ClosedSocket(Exception):
 def read_json(skt: socket):
     return json.loads(__read_string(skt))
 
-def handle_connection(connections_queue: mp.Queue):
-    middleware = MOM("accepter", None)
+def handle_connection(connections_queue: mp.Queue, middleware: MOM):
+    # middleware = MOM(cluster_type, None)
     read_socket = connections_queue.get()
     while read_socket != None:
         should_keep_iterating = True
@@ -70,13 +72,14 @@ def main():
 
     connections_data = read_json(first_connection)
 
+    middleware = MOM(cluster_type, None)
 
     incoming_connections = connections_data["connections_amount"]
-    incoming_files_amount  = connections_data["files_amount"]
+    incoming_files_amount = connections_data["files_amount"]
     processes_amount = min([local_config["processes_amount"], mp.cpu_count(), incoming_connections])
     child_processes: "list[mp.Queue]" = []
     for _ in range(processes_amount):
-        new_process = mp.Process( target = handle_connection, args = [accepter_queue])
+        new_process = mp.Process( target = handle_connection, args = [accepter_queue, middleware])
         child_processes.append(new_process)
         new_process.start()
     for _ in range(incoming_connections):

@@ -12,7 +12,7 @@
             "category_name": 10,
             "country": 11
         },
-        "EOF_subscription_routing_key": "-1"
+        "general_subscription_routing_key": "-1"
     },
     "MOM": {
         "broker_address": "rabbitmq",
