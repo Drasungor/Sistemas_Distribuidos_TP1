@@ -15,8 +15,48 @@ local_config = config[cluster_type]
 class ClosedSocket(Exception):
 	pass
 
+class Accepter():
+    def __init__(self, skt: socket, middleware: MOM):
+        self.socket = skt
+        self.middleware = middleware
+        self.received_eofs = 0
+
+        self.previous_stage_size = 0
+        for previous_stage in local_config["receives_from"]:
+            self.previous_stage_size += config[previous_stage]["computers_amount"]
+
+
+    def process_received_message(self, ch, method, properties, body):
+        response = json.loads(body)
+        if response != None:
+            self.received_eofs += 1
+            if self.received_eofs == self.previous_stage_size:
+                send_json(self.socket, { "finished": True })
+        else:
+            sender = response["type"]
+            if sender == "duplication_filter":
+                received_tuple = response["tuple"]
+                send_json(self.socket, { "first_query": received_tuple, "finished": False })
+            elif sender == "thumbnails_downloader":
+                max_day = response["max_day"]
+                send_json(self.socket, { "second_query": max_day, "finished": False })
+            elif sender == "max_views_day":
+                image_data = response["img_data"]
+                send_json(self.socket, { "third_query": image_data, "finished": False })
+            else:
+                raise ValueError(f"Unexpected sender: {sender}")
+
 def read_json(skt: socket):
     return json.loads(__read_string(skt))
+
+def send_string(skt: socket, data: str):
+    encoded_data = data.encode()
+    message_length = len(encoded_data)
+    skt.sendall(message_length.to_bytes(4, "big"))
+    skt.sendall(data.encode())
+
+def send_json(skt: socket, data):
+    send_string(skt, json.dumps(data))
 
 def handle_connection(connections_queue: mp.Queue, middleware: MOM):
     # middleware = MOM(cluster_type, None)
@@ -77,6 +117,9 @@ def main():
     incoming_connections = connections_data["connections_amount"]
     incoming_files_amount = connections_data["files_amount"]
     processes_amount = min([local_config["processes_amount"], mp.cpu_count(), incoming_connections])
+
+    middleware.send_general(processes_amount) # So that the other clusters know for how many Nones they have to listen to
+
     child_processes: "list[mp.Queue]" = []
     for _ in range(processes_amount):
         new_process = mp.Process( target = handle_connection, args = [accepter_queue, middleware])
