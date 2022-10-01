@@ -20,18 +20,12 @@ class MaxViewsDay:
         self.previous_stage_size = config[previous_stage]["computers_amount"]
 
     def process_received_message(self, ch, method, properties, body):
-        # TODO: implement this logic
-        # iterate received array and update max day
-        # If cant finished received = pcs views sum amount
-        # send max day
         if method.routing_key == general_config["EOF_subscription_routing_key"]: # TODO: check if this condition is correct
             self.received_eofs += 1
             if self.received_eofs == self.previous_stage_size:
-                final_message_dict = { "type": "max_views_day", "max_day": self.max_views_date }
-                self.middleware.send_final(final_message_dict)
-                self.middleware.send_final(body)
-            # Send current max
-            # Check if also the last views sum is sent in this message
+                final_message_dict = { "type": cluster_type, "max_day": self.max_views_date }
+                self.middleware.send(final_message_dict)
+                self.middleware.send_final(None)
         else:
             daily_views_dict = json.loads(body)
             for day in daily_views_dict:
