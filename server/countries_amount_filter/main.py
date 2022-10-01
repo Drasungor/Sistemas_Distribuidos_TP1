@@ -1,16 +1,18 @@
 import json
 from MOM.MOM import MOM
 
+cluster_type = "countries_amount_filter"
+
 config_file_path = "/config/config.json"
 config = None
 with open(config_file_path, "r") as config_file:
     config = json.load(open(config_file_path, "r"))
 general_config = config["general"]
-local_config = config["countries_amount"]
+local_config = config[cluster_type]
 
 class CountriesAmountFilter:
     def __init__(self):
-        self.middleware = MOM("countries_amount_filter", self.process_received_message)
+        self.middleware = MOM(cluster_type, self.process_received_message)
         self.videos_countries = {}
         self.countries_amount = None # TODO: we should receive the amount of countries after the client establishes a connection
         self.received_eofs = 0

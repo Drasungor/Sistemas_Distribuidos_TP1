@@ -1,16 +1,18 @@
 import json
 from MOM.MOM import MOM
 
+cluster_type = "views_sum"
+
 config_file_path = "/config/config.json"
 config = None
 with open(config_file_path, "r") as config_file:
     config = json.load(open(config_file_path, "r"))
 general_config = config["general"]
-local_config = config["views_sum"]
+local_config = config[cluster_type]
 
 class ViewsSum:
     def __init__(self):
-        self.middleware = MOM("views_sum", self.process_received_message)
+        self.middleware = MOM(cluster_type, self.process_received_message)
         self.aggregation_dict = {}
         self.received_eofs = 0
         

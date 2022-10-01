@@ -1,16 +1,18 @@
 import json
 from MOM.MOM import MOM
 
+cluster_type = "likes_filter"
+
 config_file_path = "/config/config.json"
 config = None
 with open(config_file_path, "r") as config_file:
     config = json.load(open(config_file_path, "r"))
 general_config = config["general"]
-local_config = config["likes_filter"]
+local_config = config[cluster_type]
 
 class LikesFilter:
     def __init__(self):
-        self.middleware = MOM("likes_filter", self.process_received_line)
+        self.middleware = MOM(cluster_type, self.process_received_line)
         self.received_eofs = 0
         
         previous_stage = local_config["receives_from"]

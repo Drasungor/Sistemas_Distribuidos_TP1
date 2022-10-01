@@ -1,16 +1,18 @@
 import json
 from MOM.MOM import MOM
 
+cluster_type = "max_views_day"
+
 config_file_path = "/config/config.json"
 config = None
 with open(config_file_path, "r") as config_file:
     config = json.load(open(config_file_path, "r"))
 general_config = config["general"]
-local_config = config["max_views_day"]
+local_config = config[cluster_type]
 
 class MaxViewsDay:
     def __init__(self):
-        self.middleware = MOM("max_views_day", self.process_received_message)
+        self.middleware = MOM(cluster_type, self.process_received_message)
         self.max_views_date = (None, 0)
         self.received_eofs = 0
         
@@ -25,11 +27,11 @@ class MaxViewsDay:
         if method.routing_key == general_config["EOF_subscription_routing_key"]: # TODO: check if this condition is correct
             self.received_eofs += 1
             if self.received_eofs == self.previous_stage_size:
+                final_message_dict = { "type": "max_views_day", "max_day": self.max_views_date }
+                self.middleware.send_final(final_message_dict)
                 self.middleware.send_final(body)
             # Send current max
             # Check if also the last views sum is sent in this message
-            final_message_dict = { "type": "max_views_day", "max_day": self.max_views_date }
-            self.middleware.send_final(final_message_dict)
         else:
             daily_views_dict = json.loads(body)
             for day in daily_views_dict:
