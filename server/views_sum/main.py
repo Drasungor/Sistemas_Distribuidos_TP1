@@ -12,9 +12,16 @@ class ViewsSum:
     def __init__(self):
         self.middleware = MOM("views_sum", self.process_received_message)
         self.aggregation_dict = {}
+        self.received_eofs = 0
+        
+        previous_stage = local_config["receives_from"]
+        self.previous_stage_size = config[previous_stage]["computers_amount"]
 
     def process_received_message(self, ch, method, properties, body):
         if method.routing_key == general_config["EOF_subscription_routing_key"]:
+            self.received_eofs += 1
+            if self.received_eofs == self.previous_stage_size:
+                self.middleware.send_final(body)
             self.middleware.send_final(json.dumps(self.aggregation_dict))
         else:
             line = json.loads(body)

@@ -11,11 +11,17 @@ local_config = config["likes_filter"]
 class LikesFilter:
     def __init__(self):
         self.middleware = MOM("likes_filter", self.process_received_line)
+        self.received_eofs = 0
+        
+        previous_stage = local_config["receives_from"]
+        self.previous_stage_size = config[previous_stage]["computers_amount"]
 
     def process_received_line(self, ch, method, properties, body):
         line = json.loads(body)
         if method.routing_key == general_config["EOF_subscription_routing_key"]:
-            self.middleware.send_final(body)
+            self.received_eofs += 1
+            if self.received_eofs == self.previous_stage_size:
+                self.middleware.send_final(body)
         else:
             likes_amount: str = line[general_config["indexes"]["likes"]]
             if likes_amount >= local_config["likes_min"]:
