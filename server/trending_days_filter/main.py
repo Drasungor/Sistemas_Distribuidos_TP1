@@ -23,7 +23,7 @@ class TrendingDaysFilter:
         if method.routing_key == general_config["EOF_subscription_routing_key"]:
             self.received_eofs += 1
             if self.received_eofs == self.previous_stage_size:
-                self.middleware.send_final(body)
+                self.middleware.send_final(None)
         else:
             line = json.loads(body)
             video_id = line[general_config["indexes"]["video_id"]]
