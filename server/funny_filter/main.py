@@ -27,7 +27,7 @@ class FunnyFilter:
         else:
             tags: str = line[general_config["indexes"]["tags"]]
             if local_config["tag"] in tags:
-                self.middleware.send(body)
+                self.middleware.send(line)
 
     def start_received_messages_processing(self):
         self.middleware.start_received_messages_processing()

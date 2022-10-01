@@ -2,9 +2,10 @@
     "general": {
         "rabbit_address": "rabbitmq",
         "rabbit_port": "15672",
-        "video_id_index": 0,
-        "trending_date_index": 2,
         "indexes": {
+            "video_id": 0,
+            "title": 1,
+            "trending_date": 2,
             "tags": 7,
             "views": 8,
             "likes": 9,

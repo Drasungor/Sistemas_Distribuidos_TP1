@@ -13,7 +13,7 @@ local_config = config[cluster_type]
 class DuplicationFilter:
     def __init__(self):
         self.middleware = MOM(cluster_type, self.process_received_message)
-        self.sent_videos = {}
+        self.sent_videos = set()
         self.received_eofs = 0
         
         previous_stage = local_config["receives_from"]
@@ -25,14 +25,14 @@ class DuplicationFilter:
         if method.routing_key == general_config["EOF_subscription_routing_key"]:
             self.received_eofs += 1
             if self.received_eofs == self.previous_stage_size:
-                self.middleware.send_final(body)
+                self.middleware.send_final(None)
         else:
             video_id = line[general_config["indexes"]["video_id"]]
-            country = line[general_config["indexes"]["video_id"]]
-            if not (video_id in self.videos_countries):
-                self.videos_countries[video_id] = set()
-            current_countries_amount = len(self.videos_countries[video_id])
-            self.videos_countries[video_id].add()
+            title = line[general_config["indexes"]["title"]]
+            category = line[general_config["indexes"]["category"]]
+            if not (video_id in self.received_eofs):
+                self.sent_videos.add(video_id)
+                self.middleware.send((video_id, title, category))
 
     def start_received_messages_processing(self):
         self.middleware.start_received_messages_processing()
