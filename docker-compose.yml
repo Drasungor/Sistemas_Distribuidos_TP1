@@ -15,7 +15,6 @@ services:
       retries: 3
 
   accepter:
-    # image: python
     build: ./server
     environment:
       - PYTHONUNBUFFERED=1
@@ -31,8 +30,37 @@ services:
       rabbitmq:
         condition: service_healthy
 
+  countries_amount_filter_0:
+    build: ./server
+    environment:
+      - PYTHONUNBUFFERED=1
+      - NODE_ID=0
+    volumes:
+      - ./server/countries_amount_filter/main.py:/app/main.py
+      - ./server/MOM/MOM.py:/app/MOM.py
+      - ./server/config.json:/config/config.json
+    entrypoint: "python main.py"
+    working_dir: /app
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+
+  duplication_filter_0:
+    build: ./server
+    environment:
+      - PYTHONUNBUFFERED=1
+      - NODE_ID=0
+    volumes:
+      - ./server/duplication_filter/main.py:/app/main.py
+      - ./server/MOM/MOM.py:/app/MOM.py
+      - ./server/config.json:/config/config.json
+    entrypoint: "python main.py"
+    working_dir: /app
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+
   funny_filter_0:
-    # image: python
     build: ./server
     environment:
       - PYTHONUNBUFFERED=1
@@ -41,16 +69,88 @@ services:
       - ./server/funny_filter/main.py:/app/main.py
       - ./server/MOM/MOM.py:/app/MOM.py
       - ./server/config.json:/config/config.json
-    expose:
-      - "8080"
     entrypoint: "python main.py"
     working_dir: /app
     depends_on:
       rabbitmq:
         condition: service_healthy
 
+  likes_filter_0:
+    build: ./server
+    environment:
+      - PYTHONUNBUFFERED=1
+      - NODE_ID=0
+    volumes:
+      - ./server/likes_filter/main.py:/app/main.py
+      - ./server/MOM/MOM.py:/app/MOM.py
+      - ./server/config.json:/config/config.json
+    entrypoint: "python main.py"
+    working_dir: /app
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+
+  max_views_day:
+    build: ./server
+    environment:
+      - PYTHONUNBUFFERED=1
+    volumes:
+      - ./server/max_views_day/main.py:/app/main.py
+      - ./server/MOM/MOM.py:/app/MOM.py
+      - ./server/config.json:/config/config.json
+    entrypoint: "python main.py"
+    working_dir: /app
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+
+  thumbnails_downloader_0:
+    build: ./server
+    environment:
+      - PYTHONUNBUFFERED=1
+      - NODE_ID=0
+    volumes:
+      - ./server/thumbnails_downloader/main.py:/app/main.py
+      - ./server/MOM/MOM.py:/app/MOM.py
+      - ./server/config.json:/config/config.json
+    entrypoint: "python main.py"
+    working_dir: /app
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+
+  trending_days_filter_0:
+    build: ./server
+    environment:
+      - PYTHONUNBUFFERED=1
+      - NODE_ID=0
+    volumes:
+      - ./server/trending_days_filter/main.py:/app/main.py
+      - ./server/MOM/MOM.py:/app/MOM.py
+      - ./server/config.json:/config/config.json
+    entrypoint: "python main.py"
+    working_dir: /app
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+
+  views_sum_0:
+    build: ./server
+    environment:
+      - PYTHONUNBUFFERED=1
+      - NODE_ID=0
+    volumes:
+      - ./server/views_sum/main.py:/app/main.py
+      - ./server/MOM/MOM.py:/app/MOM.py
+      - ./server/config.json:/config/config.json
+    entrypoint: "python main.py"
+    working_dir: /app
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+
+
   # funny_filter_1:
-  #   # image: python
   #   build: ./server
   #   environment:
   #     - PYTHONUNBUFFERED=1
