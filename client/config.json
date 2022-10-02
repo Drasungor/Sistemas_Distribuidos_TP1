@@ -4,6 +4,11 @@
     "accepter_port": 8080,
     "batch_size": "1000",
     "category_id_index": 5,
+    "result_files_paths": {
+        "first_query": "./result/first_query.txt",
+        "second_query": "./result/first_query.txt",
+        "third_query": "./resulr/third_query"
+    },
     "files_names": [
         {
             "category": "./data/BR_category_id.json",

@@ -2,8 +2,11 @@ import csv
 import socket
 import multiprocessing as mp
 import json
+import base64
 import signal
 
+class ClosedSocket(Exception):
+	pass
 
 config_file_path = "config.json"
 config = None
@@ -15,6 +18,21 @@ def send_string(skt: socket, data: str):
     message_length = len(encoded_data)
     skt.sendall(message_length.to_bytes(4, "big"))
     skt.sendall(data.encode())
+
+
+def __recv_all(skt: socket, bytes_amount: int):
+		total_received_bytes = b''
+		while (len(total_received_bytes) < bytes_amount):
+			received_bytes = skt.recv(bytes_amount - len(total_received_bytes))
+			if (len(received_bytes) == 0):
+				raise ClosedSocket
+			total_received_bytes += received_bytes
+		return total_received_bytes
+
+def read_string(skt: socket):
+    string_length = int.from_bytes(__recv_all(skt, 4), "big")
+    read_string = __recv_all(skt, string_length).decode()
+    return read_string
 
 def send_number(skt: socket, number: int):
     skt.sendall(number.to_bytes(4, "big"))
@@ -74,6 +92,31 @@ def send_files_data(files_paths_queue: mp.Queue):
         send_file_data(process_socket, read_message)
         read_message = files_paths_queue.get()
     process_socket.close()
+
+def receive_query_response(skt: socket):
+    finished = False
+    first_query_ptr = open(config["result_files_paths"]["first_query"], "w")
+    second_query_ptr = open(config["result_files_paths"]["second_query"], "w")
+    third_query_folder = config["result_files_paths"]["second_query"]
+    while not finished:
+        received_message = json.loads(read_string(skt))
+        query_type = received_message["type"]
+        finished = received_message["finished"]
+        value = received_message["value"]
+        if not finished:
+            if query_type == "first_query":
+                first_query_ptr.write(f"{value}\n")
+            elif query_type == "second_query":
+                second_query_ptr.write(f"{value}\n")
+            elif query_type == "third_query":
+                image_bytes = base64.b64decode(value[1])
+                video_id = value[0]
+                aux_thumbnail_file_ptr = open(f"{third_query_folder}/{video_id}", "w")
+                aux_thumbnail_file_ptr.write(image_bytes)
+                aux_thumbnail_file_ptr.close()
+    first_query_ptr.close()
+    second_query_ptr.close()
+
 
 def main():
     files_paths = config["files_names"]

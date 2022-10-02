@@ -36,13 +36,13 @@ class Accepter():
             sender = response["type"]
             if sender == "duplication_filter":
                 received_tuple = response["tuple"]
-                send_json(self.socket, { "first_query": received_tuple, "finished": False })
+                send_json(self.socket, { "type": "first_query", "value": received_tuple, "finished": False })
             elif sender == "thumbnails_downloader":
                 max_day = response["max_day"]
-                send_json(self.socket, { "second_query": max_day, "finished": False })
+                send_json(self.socket, { "type": "second_query", "value": max_day, "finished": False })
             elif sender == "max_views_day":
                 image_data = response["img_data"]
-                send_json(self.socket, { "third_query": image_data, "finished": False })
+                send_json(self.socket, { "type": "third_query", "value": image_data, "finished": False })
             else:
                 raise ValueError(f"Unexpected sender: {sender}")
 
