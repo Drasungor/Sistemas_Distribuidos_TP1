@@ -55,6 +55,17 @@ def get_categories_dict(json_path: str):
             categories[str(category["id"])] = category["snippet"]["title"]
     return categories
 
+def get_next_line(csv_reader):
+    should_keep_reading = True
+    current_line = None
+    while should_keep_reading:
+        try:
+            current_line = next(csv_reader, None)
+            should_keep_reading = False
+        except csv.Error:
+            print("Reading error")
+    return current_line
+
 def send_file_data(skt: socket, files_paths):
 
     print("Entre a send_file_data")
@@ -68,27 +79,27 @@ def send_file_data(skt: socket, files_paths):
     country_prefix = trending_file_path.split(".")[2][0:2]
     with open(trending_file_path) as trending_file_ptr:
         csv_reader = csv.reader(trending_file_ptr)
+        # csv_reader = csv.reader(trending_file_ptr, delimiter = ",", quotechar='"')
         next(csv_reader) #Discards header
         lines_accumulator = []
-        current_line = next(csv_reader, None)
+        # current_line = next(csv_reader, None)
+        current_line = get_next_line(csv_reader)
         while current_line != None:
-            try:
-                category_id = str(current_line[config["category_id_index"]])
-                if category_id in categories:
-                    current_line.append(categories[category_id])
-                else:
-                    current_line.append(None)
-                current_line.append(country_prefix)
-                lines_accumulator.append(current_line)
-                if len(lines_accumulator) == batch_size:
-                    send_cached_data(skt, lines_accumulator, False)
-                    lines_accumulator = []
-                current_line = next(csv_reader, None)
-            except csv.Error:
-                print("Reading error")
-        print("BORRAR BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB")
+            if len(current_line) != 16:
+                print(f"Expected length 16, got length {len(current_line)} with line {current_line}")
+            category_id = str(current_line[config["category_id_index"]])
+            if category_id in categories:
+                current_line.append(categories[category_id])
+            else:
+                current_line.append(None)
+            current_line.append(country_prefix)
+            lines_accumulator.append(current_line)
+            if len(lines_accumulator) == batch_size:
+                send_cached_data(skt, lines_accumulator, False)
+                lines_accumulator = []
+            # current_line = next(csv_reader, None)
+            current_line = get_next_line(csv_reader)
         send_cached_data(skt, lines_accumulator, True)
-        print("BORRAR ASDASDASDASDASDASDASDASDASDASDASDASDAS")
 
 def send_files_data(files_paths_queue: mp.Queue):
     # print("BORRAR nuevo proceso")
@@ -101,18 +112,15 @@ def send_files_data(files_paths_queue: mp.Queue):
     should_keep_iterating = read_message != None
     while should_keep_iterating:
         send_file_data(process_socket, read_message)
-        print("BORRAR Voy a leer un archivo de la cola")
         read_message = files_paths_queue.get()
         should_keep_iterating = read_message != None
         if should_keep_iterating:
             send_string(process_socket, json.dumps(True))
 
-    print("BORRAR No tengo mas mensajes en la cola")
     send_string(process_socket, json.dumps(False))
     process_socket.close()
 
 def receive_query_response(skt: socket):
-
     print("BORRAR entre a receive_query_response")
 
     finished = False
@@ -121,6 +129,7 @@ def receive_query_response(skt: socket):
     third_query_folder = config["result_files_paths"]["second_query"]
     while not finished:
         received_message = json.loads(read_string(skt))
+        print(f"BORRAR Lei el mensaje {received_message}")
         query_type = received_message["type"]
         finished = received_message["finished"]
         value = received_message["value"]

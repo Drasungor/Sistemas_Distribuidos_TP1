@@ -31,6 +31,7 @@ class LikesFilter:
             if self.received_eofs == self.previous_stage_size:
                 self.middleware.send_general(body)
         else:
+            # print(line)
             likes_amount: str = line[general_config["indexes"]["likes"]]
             if int(likes_amount) >= local_config["likes_min"]:
                 self.middleware.send(line)

@@ -20,9 +20,10 @@ class MOM:
         self.sender = None # [(exchange name, [hashing attributes], connections_amount)] | [queue name]
         self.connection_mode = connection_mode
         connections = local_config["connections"]
-        connections.append("accepter_sender")
-        if not (connection_mode in connections):
-            raise ValueError(f"Connection mode is {connection_mode}, and should be one of the following: {connections.keys()}")
+        connections_names = list(connections.keys())
+        connections_names.append("accepter_sender")
+        if not (connection_mode in connections_names):
+            raise ValueError(f"Connection mode is {connection_mode}, and should be one of the following: {connections_names}")
 
         receives_messages = True
 
