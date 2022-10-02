@@ -1,7 +1,7 @@
 import socket
 import multiprocessing as mp
 import json
-from MOM.MOM import MOM
+from MOM import MOM
 
 cluster_type = "accepter"
 
