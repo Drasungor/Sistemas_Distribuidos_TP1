@@ -29,8 +29,8 @@ class DuplicationFilter:
         else:
             video_id = line[general_config["indexes"]["video_id"]]
             title = line[general_config["indexes"]["title"]]
-            category = line[general_config["indexes"]["category"]]
-            if not (video_id in self.received_eofs):
+            category = line[general_config["indexes"]["category_name"]]
+            if not (video_id in self.sent_videos):
                 self.sent_videos.add(video_id)
                 self.middleware.send({ "type": cluster_type, "tuple": (video_id, title, category) })
 

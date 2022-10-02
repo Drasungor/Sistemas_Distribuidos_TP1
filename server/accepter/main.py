@@ -36,6 +36,9 @@ class Accepter():
         self.middleware.start_received_messages_processing()
 
     def process_received_message(self, ch, method, properties, body):
+
+        print("VOY A PROCESAR UN MENSAJE NUEVO EN ACCEPTER SIUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUU")
+
         response = json.loads(body)
         if response != None:
             self.received_eofs += 1

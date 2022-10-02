@@ -76,7 +76,7 @@ def send_file_data(skt: socket, files_paths):
     #       TAMBIEN DEBERÍA AGREGARSE EN EL SERVER EL PAIS EN CADA LINEA
     categories = get_categories_dict(files_paths["category"])
     trending_file_path: str = files_paths["trending"]
-    country_prefix = trending_file_path.split(".")[2][0:2]
+    country_prefix = trending_file_path.split(".")[1][0:2]
     with open(trending_file_path) as trending_file_ptr:
         csv_reader = csv.reader(trending_file_ptr)
         # csv_reader = csv.reader(trending_file_ptr, delimiter = ",", quotechar='"')
