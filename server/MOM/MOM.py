@@ -20,9 +20,11 @@ class MOM:
         self.sender = None # [(exchange name, [hashing attributes], connections_amount)] | [queue name]
         self.connection_mode = connection_mode
         connections = local_config["connections"]
+        connections.append("accepter_sender")
         if not (connection_mode in connections):
             raise ValueError(f"Connection mode is {connection_mode}, and should be one of the following: {connections.keys()}")
 
+        receives_messages = True
 
         subscribes_to_keywords = False # reads from publisher/subscriber
         self.sends_to_publisher = False # sends to publisher/subscriber
@@ -30,7 +32,11 @@ class MOM:
         # TODO: HACER QUE LOS CONFIGS SE LLAMEN IGUAL QUE LAS COLAS RECEPTORAS, ASI NO HAY QUE HARDCODEAR LOS PROCESOS A LOS QUE SE ENVIAN COSAS (EJ CANTIDAD DE PCS),
         # IGUAL TAL VEZ NO TIENE MUCHO SENTIDO PORQUE IGUAL EL RUTEO POR HASHING DEPENDE DEL DESTINO, IGUAL ESO TAMBIEN PODRIA LLEGAR A SER CONFIGURABLE
 
-        if connection_mode == "accepter":
+        if connection_mode == "accepter" or connection_mode == "accepter_sender":
+            if connection_mode == "accepter_sender":
+                receives_messages = False
+
+            connection_mode = "accepter"
             # Sending
             self.sends_to_publisher = True
 
@@ -61,18 +67,19 @@ class MOM:
 
             raise ValueError(f"Unexpected connection mode {connection_mode}, it should be one of the following: {connections.keys()}")
 
-        if subscribes_to_keywords:
-            self.channel.exchange_declare(exchange = connection_mode, exchange_type = "direct")
-            self.receiver = connection_mode
-            result = self.channel.queue_declare(queue='', exclusive=True)
-            queue_name = result.method.queue
-            self.channel.queue_bind(exchange = self.receiver, queue = queue_name, routing_key = os.environ["NODE_ID"])
-            self.channel.queue_bind(exchange = self.receiver, queue = queue_name, routing_key = general_config["general_subscription_routing_key"])
-            self.channel.basic_consume(queue = queue_name, on_message_callback=receiver_callback, auto_ack=True)
-        else:
-            self.receiver = connection_mode
-            self.channel.queue_declare(queue = connection_mode)
-            self.channel.basic_consume(queue = connection_mode, on_message_callback=receiver_callback, auto_ack=True)
+        if receives_messages:
+            if subscribes_to_keywords:
+                self.channel.exchange_declare(exchange = connection_mode, exchange_type = "direct")
+                self.receiver = connection_mode
+                result = self.channel.queue_declare(queue='', exclusive=True)
+                queue_name = result.method.queue
+                self.channel.queue_bind(exchange = self.receiver, queue = queue_name, routing_key = os.environ["NODE_ID"])
+                self.channel.queue_bind(exchange = self.receiver, queue = queue_name, routing_key = general_config["general_subscription_routing_key"])
+                self.channel.basic_consume(queue = queue_name, on_message_callback=receiver_callback, auto_ack=True)
+            else:
+                self.receiver = connection_mode
+                self.channel.queue_declare(queue = connection_mode)
+                self.channel.basic_consume(queue = connection_mode, on_message_callback=receiver_callback, auto_ack=True)
 
         if self.sends_to_publisher:
             self.sender = []
@@ -81,7 +88,8 @@ class MOM:
                 self.sender.append((connecting_to, config[connecting_to]["hashed_by"], config[connecting_to]["computers_amount"])) # (exchange name, [hashing attributes], receiver computers amount)
                 self.channel.exchange_declare(exchange = connecting_to, exchange_type = "direct")
         else:
-            self.sender = (connections[connection_mode]["sends_to"], "")
+            # self.sender = (connections[connection_mode]["sends_to"], "")
+            self.sender = []
             for connection in connections[connection_mode]["sends_to"]:
                 self.sender.append(connection)
                 self.channel.queue_declare(queue = connection)

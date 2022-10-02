@@ -169,6 +169,8 @@ services:
 
   client:
     image: python
+    environment:
+      - PYTHONUNBUFFERED=1
     volumes:
       - ./client:/app
     command: python /app/main.py

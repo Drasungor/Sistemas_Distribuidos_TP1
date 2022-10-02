@@ -18,15 +18,19 @@ class ClosedSocket(Exception):
 class Accepter():
     def __init__(self, skt: socket):
         self.socket = skt
-        self.middleware = None
+        self.middleware: MOM = MOM(cluster_type, self.process_received_message)
+        # self.middleware = None
         self.received_eofs = 0
 
         self.previous_stage_size = 0
         for previous_stage in local_config["receives_from"]:
             self.previous_stage_size += config[previous_stage]["computers_amount"]
 
-    def add_middleware(self, middleware: MOM):
-        self.middleware = middleware
+    # def add_middleware(self, middleware: MOM):
+    #     self.middleware = middleware
+
+    def send_general(self, message):
+        self.middleware.send_general(message)
 
     def start_received_messages_processing(self):
         self.middleware.start_received_messages_processing()
@@ -51,6 +55,8 @@ class Accepter():
             else:
                 raise ValueError(f"Unexpected sender: {sender}")
 
+
+
 def read_json(skt: socket):
     return json.loads(__read_string(skt))
 
@@ -63,8 +69,9 @@ def send_string(skt: socket, data: str):
 def send_json(skt: socket, data):
     send_string(skt, json.dumps(data))
 
-def handle_connection(connections_queue: mp.Queue, middleware: MOM):
-    # middleware = MOM(cluster_type, None)
+# def handle_connection(connections_queue: mp.Queue, middleware: MOM):
+def handle_connection(connections_queue: mp.Queue):
+    middleware = MOM(f"{cluster_type}_sender", None)
     read_socket = connections_queue.get()
     while read_socket != None:
         should_keep_iterating = True
@@ -80,16 +87,18 @@ def handle_connection(connections_queue: mp.Queue, middleware: MOM):
             read_lines += len(read_data["data"])
 
             should_keep_iterating = not read_data["file_finished"]
+            if not should_keep_iterating:
+                should_keep_iterating = read_json(read_socket)
             if len(read_data["data"]) != 0:
                 for line in read_data["data"]:
                     middleware.send(line)
                     pass
                     # print(f"Category: {line[0]}")
-        middleware.send_general(None)
         # BORRAR
         print(f"Read lines: {read_lines}")
 
         read_socket = connections_queue.get()
+    middleware.send_general(None)
 
 def __recv_all(skt: socket, bytes_amount: int):
 		total_received_bytes = b''
@@ -118,19 +127,24 @@ def main():
     connections_data = read_json(first_connection)
 
 
-    accepter_object = Accepter(first_connection)
-    middleware = MOM(cluster_type, accepter_object.process_received_message)
-    accepter_object.add_middleware(middleware)
+    # accepter_object = Accepter(first_connection)
+    # middleware = MOM(cluster_type, accepter_object.process_received_message)
+    # accepter_object.add_middleware(middleware)
 
     incoming_connections = connections_data["connections_amount"]
+
+    print(f"BORRAR cantidad conexiones: {incoming_connections}")
+
     incoming_files_amount = connections_data["files_amount"]
     processes_amount = min([local_config["processes_amount"], mp.cpu_count(), incoming_connections])
 
-    middleware.send_general(processes_amount) # So that the other clusters know for how many Nones they have to listen to
+    accepter_object = Accepter(first_connection)
+    accepter_object.send_general(processes_amount) # So that the other clusters know for how many Nones they have to listen to
 
     child_processes: "list[mp.Queue]" = []
     for _ in range(processes_amount):
-        new_process = mp.Process( target = handle_connection, args = [accepter_queue, middleware])
+        # new_process = mp.Process( target = handle_connection, args = [accepter_queue, middleware])
+        new_process = mp.Process( target = handle_connection, args = [accepter_queue])
         child_processes.append(new_process)
         new_process.start()
     for _ in range(incoming_connections):

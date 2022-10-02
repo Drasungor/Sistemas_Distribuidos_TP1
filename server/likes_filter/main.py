@@ -19,7 +19,10 @@ class LikesFilter:
         self.received_eofs = 0
         
         previous_stage = local_config["receives_from"]
-        self.previous_stage_size = config[previous_stage]["computers_amount"]
+        if previous_stage == "accepter":
+            self.previous_stage_size = config[previous_stage]["processes_amount"]
+        else:
+            self.previous_stage_size = config[previous_stage]["computers_amount"]
 
     def process_received_line(self, ch, method, properties, body):
         line = json.loads(body)
@@ -29,7 +32,7 @@ class LikesFilter:
                 self.middleware.send_general(body)
         else:
             likes_amount: str = line[general_config["indexes"]["likes"]]
-            if likes_amount >= local_config["likes_min"]:
+            if int(likes_amount) >= local_config["likes_min"]:
                 self.middleware.send(line)
 
     def start_received_messages_processing(self):

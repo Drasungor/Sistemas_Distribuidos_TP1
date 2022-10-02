@@ -56,6 +56,9 @@ def get_categories_dict(json_path: str):
     return categories
 
 def send_file_data(skt: socket, files_paths):
+
+    print("Entre a send_file_data")
+
     batch_size = config["batch_size"]
 
     # TODO: ENVIAR LOS ARCHIVOS DE CATEGORIAS, EL JOIN TIENE QUE HACERSE EN EL SERVER, probablemente en el duplicator filter, 
@@ -67,33 +70,51 @@ def send_file_data(skt: socket, files_paths):
         csv_reader = csv.reader(trending_file_ptr)
         next(csv_reader) #Discards header
         lines_accumulator = []
-        for line in csv_reader:
-            category_id = str(line[config["category_id_index"]])
-            if category_id in categories:
-                line.append(categories[category_id])
-            else:
-                line.append(None)
-            line.append(country_prefix)
-            lines_accumulator.append(line)
-            if len(lines_accumulator) == batch_size:
-                send_cached_data(skt, lines_accumulator, False)
-                lines_accumulator = []
+        current_line = next(csv_reader, None)
+        while current_line != None:
+            try:
+                category_id = str(current_line[config["category_id_index"]])
+                if category_id in categories:
+                    current_line.append(categories[category_id])
+                else:
+                    current_line.append(None)
+                current_line.append(country_prefix)
+                lines_accumulator.append(current_line)
+                if len(lines_accumulator) == batch_size:
+                    send_cached_data(skt, lines_accumulator, False)
+                    lines_accumulator = []
+                current_line = next(csv_reader, None)
+            except csv.Error:
+                print("Reading error")
+        print("BORRAR BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB")
         send_cached_data(skt, lines_accumulator, True)
+        print("BORRAR ASDASDASDASDASDASDASDASDASDASDASDASDAS")
 
 def send_files_data(files_paths_queue: mp.Queue):
-    print("nuevo proceso")
+    # print("BORRAR nuevo proceso")
     connection_address = config["accepter_address"]
     connection_port = config["accepter_port"]
     process_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     process_socket.connect((connection_address, connection_port))
     
     read_message = files_paths_queue.get()
-    while read_message != None:
+    should_keep_iterating = read_message != None
+    while should_keep_iterating:
         send_file_data(process_socket, read_message)
+        print("BORRAR Voy a leer un archivo de la cola")
         read_message = files_paths_queue.get()
+        should_keep_iterating = read_message != None
+        if should_keep_iterating:
+            send_string(process_socket, json.dumps(True))
+
+    print("BORRAR No tengo mas mensajes en la cola")
+    send_string(process_socket, json.dumps(False))
     process_socket.close()
 
 def receive_query_response(skt: socket):
+
+    print("BORRAR entre a receive_query_response")
+
     finished = False
     first_query_ptr = open(config["result_files_paths"]["first_query"], "w")
     second_query_ptr = open(config["result_files_paths"]["second_query"], "w")
