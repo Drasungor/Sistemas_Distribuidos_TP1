@@ -9,6 +9,7 @@ services:
       - 15672:15672
     healthcheck:
       test: rabbitmq-diagnostics -q ping
+      # test: rabbitmq-diagnostics check_running
       interval: 30s
       timeout: 30s
       retries: 3
@@ -48,59 +49,23 @@ services:
       rabbitmq:
         condition: service_healthy
 
-  funny_filter_1:
-    # image: python
-    build: ./server
-    environment:
-      - PYTHONUNBUFFERED=1
-      - NODE_ID=1
-    volumes:
-      - ./server/funny_filter/main.py:/app/main.py
-      - ./server/MOM/MOM.py:/app/MOM.py
-      - ./server/config.json:/config/config.json
-    expose:
-      - "8080"
-    entrypoint: "python main.py"
-    working_dir: /app
-    depends_on:
-      rabbitmq:
-        condition: service_healthy
-
-  likes_filter_views_sum_0:
-        # image: python
-    build: ./server
-    environment:
-      - PYTHONUNBUFFERED=1
-      - NODE_ID=0
-    volumes:
-      - ./server/likes_filter_views_sum/main.py:/app/main.py
-      - ./server/MOM/MOM.py:/app/MOM.py
-      - ./server/config.json:/config/config.json
-    expose:
-      - "8080"
-    entrypoint: "python main.py"
-    working_dir: /app
-    depends_on:
-      rabbitmq:
-        condition: service_healthy
-
-  likes_filter_views_sum_1:
-        # image: python
-    build: ./server
-    environment:
-      - PYTHONUNBUFFERED=1
-      - NODE_ID=1
-    volumes:
-      - ./server/likes_filter_views_sum/main.py:/app/main.py
-      - ./server/MOM/MOM.py:/app/MOM.py
-      - ./server/config.json:/config/config.json
-    expose:
-      - "8080"
-    entrypoint: "python main.py"
-    working_dir: /app
-    depends_on:
-      rabbitmq:
-        condition: service_healthy
+  # funny_filter_1:
+  #   # image: python
+  #   build: ./server
+  #   environment:
+  #     - PYTHONUNBUFFERED=1
+  #     - NODE_ID=1
+  #   volumes:
+  #     - ./server/funny_filter/main.py:/app/main.py
+  #     - ./server/MOM/MOM.py:/app/MOM.py
+  #     - ./server/config.json:/config/config.json
+  #   expose:
+  #     - "8080"
+  #   entrypoint: "python main.py"
+  #   working_dir: /app
+  #   depends_on:
+  #     rabbitmq:
+  #       condition: service_healthy
 
   client:
     image: python

@@ -1,5 +1,5 @@
 {
-    "processes_amount": 3,
+    "processes_amount": 1,
     "accepter_address": "accepter",
     "accepter_port": 8080,
     "batch_size": "1000",

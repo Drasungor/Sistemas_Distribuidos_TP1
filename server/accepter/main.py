@@ -16,15 +16,20 @@ class ClosedSocket(Exception):
 	pass
 
 class Accepter():
-    def __init__(self, skt: socket, middleware: MOM):
+    def __init__(self, skt: socket):
         self.socket = skt
-        self.middleware = middleware
+        self.middleware = None
         self.received_eofs = 0
 
         self.previous_stage_size = 0
         for previous_stage in local_config["receives_from"]:
             self.previous_stage_size += config[previous_stage]["computers_amount"]
 
+    def add_middleware(self, middleware: MOM):
+        self.middleware = middleware
+
+    def start_received_messages_processing(self):
+        self.middleware.start_received_messages_processing()
 
     def process_received_message(self, ch, method, properties, body):
         response = json.loads(body)
@@ -77,7 +82,7 @@ def handle_connection(connections_queue: mp.Queue, middleware: MOM):
             should_keep_iterating = not read_data["file_finished"]
             if len(read_data["data"]) != 0:
                 for line in read_data["data"]:
-                    middleware.send_line(line)
+                    middleware.send(line)
                     pass
                     # print(f"Category: {line[0]}")
         middleware.send_general(None)
@@ -112,7 +117,10 @@ def main():
 
     connections_data = read_json(first_connection)
 
-    middleware = MOM(cluster_type, None)
+
+    accepter_object = Accepter(first_connection)
+    middleware = MOM(cluster_type, accepter_object.process_received_message)
+    accepter_object.add_middleware(middleware)
 
     incoming_connections = connections_data["connections_amount"]
     incoming_files_amount = connections_data["files_amount"]
@@ -133,6 +141,7 @@ def main():
         accepter_queue.put(None)
 
     # start receiving MOM messages
+    accepter_object.start_received_messages_processing()
 
     accepter_queue.close()
     accepter_queue.join_thread()

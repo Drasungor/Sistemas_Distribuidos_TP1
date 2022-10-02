@@ -58,7 +58,6 @@ def get_categories_dict(json_path: str):
 def send_file_data(skt: socket, files_paths):
     batch_size = config["batch_size"]
 
-
     # TODO: ENVIAR LOS ARCHIVOS DE CATEGORIAS, EL JOIN TIENE QUE HACERSE EN EL SERVER, probablemente en el duplicator filter, 
     #       TAMBIEN DEBERÍA AGREGARSE EN EL SERVER EL PAIS EN CADA LINEA
     categories = get_categories_dict(files_paths["category"])
@@ -82,6 +81,7 @@ def send_file_data(skt: socket, files_paths):
         send_cached_data(skt, lines_accumulator, True)
 
 def send_files_data(files_paths_queue: mp.Queue):
+    print("nuevo proceso")
     connection_address = config["accepter_address"]
     connection_port = config["accepter_port"]
     process_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -147,6 +147,7 @@ def main():
     files_paths_queue.close()
 
     # TODO: WAIT FOR QUERY RESPONSE
+    receive_query_response(main_process_connection_socket)
 
     files_paths_queue.join_thread()
     for process in child_processes:
