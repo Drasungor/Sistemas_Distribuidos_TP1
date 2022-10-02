@@ -30,14 +30,14 @@ services:
       rabbitmq:
         condition: service_healthy
 
-  general_aggregator_0:
+  funny_filter_0:
     # image: python
     build: ./server
     environment:
       - PYTHONUNBUFFERED=1
       - NODE_ID=0
     volumes:
-      - ./server/general_aggregator:/app
+      - ./server/funny_filter:/app
       - ./server/MOM:/app/MOM
       - ./server/config.json:/config/config.json
     expose:
@@ -48,14 +48,14 @@ services:
       rabbitmq:
         condition: service_healthy
 
-  general_aggregator_1:
+  funny_filter_1:
     # image: python
     build: ./server
     environment:
       - PYTHONUNBUFFERED=1
       - NODE_ID=1
     volumes:
-      - ./server/general_aggregator:/app
+      - ./server/funny_filter:/app
       - ./server/MOM:/app/MOM
       - ./server/config.json:/config/config.json
     expose:
