@@ -74,6 +74,7 @@ def send_json(skt: socket, data):
 
 # def handle_connection(connections_queue: mp.Queue, middleware: MOM):
 def handle_connection(connections_queue: mp.Queue):
+    print("Soy un subproceso")
     middleware = MOM(f"{cluster_type}_sender", None)
     read_socket = connections_queue.get()
     while read_socket != None:
@@ -102,6 +103,7 @@ def handle_connection(connections_queue: mp.Queue):
 
         read_socket = connections_queue.get()
     middleware.send_general(None)
+    print("Envie mensaje de fin")
 
 def __recv_all(skt: socket, bytes_amount: int):
 		total_received_bytes = b''
@@ -139,7 +141,8 @@ def main():
     print(f"BORRAR cantidad conexiones: {incoming_connections}")
 
     incoming_files_amount = connections_data["files_amount"]
-    processes_amount = min([local_config["processes_amount"], mp.cpu_count(), incoming_connections])
+    # processes_amount = min([local_config["processes_amount"], mp.cpu_count(), incoming_connections])
+    processes_amount = local_config["processes_amount"]
 
     accepter_object = Accepter(first_connection)
     accepter_object.send_general(processes_amount) # So that the other clusters know for how many Nones they have to listen to

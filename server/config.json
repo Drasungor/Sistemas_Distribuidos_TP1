@@ -10,7 +10,7 @@
             "views": 8,
             "likes": 9,
             "category_name": 10,
-            "country": 11
+            "country": 17
         },
         "general_subscription_routing_key": "-1"
     },

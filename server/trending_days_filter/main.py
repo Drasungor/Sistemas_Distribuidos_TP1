@@ -31,10 +31,15 @@ class TrendingDaysFilter:
             line = json.loads(body)
             video_id = line[general_config["indexes"]["video_id"]]
             if not (video_id in self.trending_days_amounts):
-                self.trending_days_amounts[video_id] = 0
-            self.trending_days_amounts[video_id] += 1
+                # self.trending_days_amounts[video_id] = 0
+                self.trending_days_amounts[video_id] = set()
+            # self.trending_days_amounts[video_id] += 1
+            current_video_set = self.trending_days_amounts[video_id]
+            previous_trending_days_amount = len(current_video_set)
+            current_video_set.add(line[general_config["indexes"]["trending_date"]])
             current_trending_days_amount = self.trending_days_amounts[video_id]
-            if current_trending_days_amount == local_config["min_trending_days"]:
+            if current_trending_days_amount == local_config["min_trending_days"] and current_trending_days_amount != previous_trending_days_amount:
+                print(line)
                 self.middleware.send(line)
 
     def start_received_messages_processing(self):
