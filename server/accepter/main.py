@@ -40,21 +40,23 @@ class Accepter():
         print("VOY A PROCESAR UN MENSAJE NUEVO EN ACCEPTER SIUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUU")
 
         response = json.loads(body)
-        if response != None:
+        if response == None:
             self.received_eofs += 1
             if self.received_eofs == self.previous_stage_size:
                 send_json(self.socket, { "finished": True })
         else:
             sender = response["type"]
+            print("Response: ")
+            print(response)
             if sender == "duplication_filter":
                 received_tuple = response["tuple"]
                 send_json(self.socket, { "type": "first_query", "value": received_tuple, "finished": False })
             elif sender == "thumbnails_downloader":
-                max_day = response["max_day"]
-                send_json(self.socket, { "type": "second_query", "value": max_day, "finished": False })
-            elif sender == "max_views_day":
                 image_data = response["img_data"]
-                send_json(self.socket, { "type": "third_query", "value": image_data, "finished": False })
+                send_json(self.socket, { "type": "second_query", "value": image_data, "finished": False })
+            elif sender == "max_views_day":
+                max_day = response["max_day"]
+                send_json(self.socket, { "type": "third_query", "value": max_day, "finished": False })
             else:
                 raise ValueError(f"Unexpected sender: {sender}")
 
@@ -142,10 +144,12 @@ def main():
 
     incoming_files_amount = connections_data["files_amount"]
     # processes_amount = min([local_config["processes_amount"], mp.cpu_count(), incoming_connections])
+    
     processes_amount = local_config["processes_amount"]
+    # processes_amount = 1
 
     accepter_object = Accepter(first_connection)
-    accepter_object.send_general(processes_amount) # So that the other clusters know for how many Nones they have to listen to
+    # accepter_object.send_general(processes_amount) # So that the other clusters know for how many Nones they have to listen to
 
     child_processes: "list[mp.Queue]" = []
     for _ in range(processes_amount):

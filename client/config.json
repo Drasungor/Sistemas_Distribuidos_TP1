@@ -6,8 +6,8 @@
     "category_id_index": 5,
     "result_files_paths": {
         "first_query": "./result/first_query.txt",
-        "second_query": "./result/first_query.txt",
-        "third_query": "./resulr/third_query"
+        "second_query": "./result/second_query",
+        "third_query": "./result/third_query.txt"
     },
     "files_names": [
         {

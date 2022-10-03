@@ -25,9 +25,11 @@ class MaxViewsDay:
             self.received_eofs += 1
             if self.received_eofs == self.previous_stage_size:
                 final_message_dict = { "type": cluster_type, "max_day": self.max_views_date }
+                print("Vot a enviar el maximo")
                 self.middleware.send(final_message_dict)
                 self.middleware.send_general(None)
         else:
+            print("Recibi un batch de suma de views de un dia")
             daily_views_dict = received_message
             for day in daily_views_dict:
                 if daily_views_dict[day] > self.max_views_date[1]:

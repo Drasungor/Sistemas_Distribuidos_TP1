@@ -125,8 +125,8 @@ def receive_query_response(skt: socket):
 
     finished = False
     first_query_ptr = open(config["result_files_paths"]["first_query"], "w")
-    second_query_ptr = open(config["result_files_paths"]["second_query"], "w")
-    third_query_folder = config["result_files_paths"]["second_query"]
+    second_query_folder = config["result_files_paths"]["second_query"]
+    third_query_ptr = open(config["result_files_paths"]["third_query"], "w")
     while not finished:
         received_message = json.loads(read_string(skt))
         print(f"BORRAR Lei el mensaje {received_message}")
@@ -137,15 +137,15 @@ def receive_query_response(skt: socket):
             if query_type == "first_query":
                 first_query_ptr.write(f"{value}\n")
             elif query_type == "second_query":
-                second_query_ptr.write(f"{value}\n")
-            elif query_type == "third_query":
                 image_bytes = base64.b64decode(value[1])
                 video_id = value[0]
-                aux_thumbnail_file_ptr = open(f"{third_query_folder}/{video_id}", "w")
+                aux_thumbnail_file_ptr = open(f"{second_query_folder}/{video_id}", "w")
                 aux_thumbnail_file_ptr.write(image_bytes)
                 aux_thumbnail_file_ptr.close()
+            elif query_type == "third_query":
+                third_query_ptr.write(f"{value}\n")
     first_query_ptr.close()
-    second_query_ptr.close()
+    third_query_ptr.close()
 
 
 def main():

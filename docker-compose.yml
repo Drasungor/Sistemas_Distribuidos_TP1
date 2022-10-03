@@ -27,8 +27,8 @@ services:
     entrypoint: "python main.py"
     working_dir: /app
     depends_on:
-      rabbitmq:
-        condition: service_healthy
+      - likes_filter_0
+      - trending_days_filter_0
 
   countries_amount_filter_0:
     build: ./server
@@ -42,8 +42,7 @@ services:
     entrypoint: "python main.py"
     working_dir: /app
     depends_on:
-      rabbitmq:
-        condition: service_healthy
+      - thumbnails_downloader_0
 
   duplication_filter_0:
     build: ./server
@@ -72,8 +71,7 @@ services:
     entrypoint: "python main.py"
     working_dir: /app
     depends_on:
-      rabbitmq:
-        condition: service_healthy
+      - duplication_filter_0
 
   likes_filter_0:
     build: ./server
@@ -87,8 +85,10 @@ services:
     entrypoint: "python main.py"
     working_dir: /app
     depends_on:
-      rabbitmq:
-        condition: service_healthy
+      # rabbitmq:
+      #   condition: service_healthy
+      - funny_filter_0
+      - views_sum_0
 
   max_views_day:
     build: ./server
@@ -131,8 +131,7 @@ services:
     entrypoint: "python main.py"
     working_dir: /app
     depends_on:
-      rabbitmq:
-        condition: service_healthy
+      - countries_amount_filter_0
 
   views_sum_0:
     build: ./server
@@ -146,8 +145,7 @@ services:
     entrypoint: "python main.py"
     working_dir: /app
     depends_on:
-      rabbitmq:
-        condition: service_healthy
+      - max_views_day
 
 
   # funny_filter_1:
