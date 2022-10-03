@@ -46,13 +46,13 @@ class TrendingDaysFilter:
             previous_trending_days_amount = len(self.trending_days_amounts[key])
             self.trending_days_amounts[key].add(line[general_config["indexes"]["trending_date"]])
             # print(type(line[general_config["indexes"]["trending_date"]]))
-            if self.trending_days_amounts_aux[key] >= 21:
-                print(key)
-                print(self.trending_days_amounts[key])
-                print(self.trending_days_amounts_aux[key])
+            # if len(self.trending_days_amounts[key]) >= 21:
+            #     print(key)
+            #     print(self.trending_days_amounts[key])
+                # print(self.trending_days_amounts_aux[key])
             current_trending_days_amount = len(self.trending_days_amounts[key])
             if current_trending_days_amount == local_config["min_trending_days"] and current_trending_days_amount != previous_trending_days_amount:
-                print(f"Sending line with 21 days: {line}")
+                # print(f"Sending line with 21 days: {line}")
                 self.middleware.send(line)
 
     def start_received_messages_processing(self):
