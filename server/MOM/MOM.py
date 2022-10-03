@@ -103,6 +103,7 @@ class MOM:
         for hashing_attribute in hashing_attributes_iterator: # Extends to more than 2 receiving ends
             aux = line[indexes_object[hashing_attribute]]
             hashing_string += f"-{aux}"
+        # print(f"BORRAR Hashing string: {hashing_string}")
         return hashing_string
 
     def send(self, message):

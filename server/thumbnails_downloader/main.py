@@ -29,6 +29,7 @@ class MaxViewsDay:
                 self.middleware.send_general(None)
         else:
             line = json.loads(body)
+            print("Me llego un link para bajar thumbnail")
             video_id = line[general_config["indexes"]["video_id"]]
             img_data = requests.get(f"https://img.youtube.com/vi/{video_id}/0.jpg").content
             self.middleware.send({ "type": cluster_type, "img_data": (video_id, base64.b64encode(img_data)) })

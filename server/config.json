@@ -5,7 +5,7 @@
         "indexes": {
             "video_id": 0,
             "title": 1,
-            "trending_date": 2,
+            "trending_date": 6,
             "tags": 7,
             "views": 8,
             "likes": 9,
