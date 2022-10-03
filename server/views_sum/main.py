@@ -26,8 +26,8 @@ class ViewsSum:
             self.received_eofs += 1
             if self.received_eofs == self.previous_stage_size:
                 print(f"VOY A ENVIAR NONE, received eofs: {self.received_eofs}, expected eofs: {self.previous_stage_size}")
+                self.middleware.send_general(self.aggregation_dict)
                 self.middleware.send_general(None)
-            self.middleware.send_general(self.aggregation_dict)
         else:
             date: str = line[general_config["indexes"]["trending_date"]]
             view_count: int = int(line[general_config["indexes"]["views"]])
