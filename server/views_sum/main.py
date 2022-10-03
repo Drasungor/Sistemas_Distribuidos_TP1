@@ -21,8 +21,8 @@ class ViewsSum:
 
     def process_received_message(self, ch, method, properties, body):
         line = json.loads(body)
-        # if method.routing_key == general_config["general_subscription_routing_key"]:
-        if line == None:
+        if method.routing_key == general_config["general_subscription_routing_key"]:
+        # if line == None:
             self.received_eofs += 1
             if self.received_eofs == self.previous_stage_size:
                 print(f"VOY A ENVIAR NONE, received eofs: {self.received_eofs}, expected eofs: {self.previous_stage_size}")
