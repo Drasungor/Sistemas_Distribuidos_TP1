@@ -27,10 +27,13 @@ class LikesFilter:
     def process_received_line(self, ch, method, properties, body):
         line = json.loads(body)
         if method.routing_key == general_config["general_subscription_routing_key"]:
-            self.received_eofs += 1
-            if self.received_eofs == self.previous_stage_size:
-                self.middleware.send_general(None)
-                self.middleware.close()
+            if line == None:
+                self.received_eofs += 1
+                if self.received_eofs == self.previous_stage_size:
+                    self.middleware.send_general(None)
+                    self.middleware.close()
+                else:
+                    self.middleware.send_general(line)
         else:
             likes_amount: str = line[local_config["indexes"]["likes"]]
             if int(likes_amount) >= local_config["likes_min"]:

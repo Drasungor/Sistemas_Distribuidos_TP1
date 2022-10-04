@@ -24,13 +24,17 @@ class TrendingDaysFilter:
             self.previous_stage_size = config[previous_stage]["computers_amount"]
 
     def process_received_message(self, ch, method, properties, body):
+        message = json.loads(body)
         if method.routing_key == general_config["general_subscription_routing_key"]:
-            self.received_eofs += 1
-            if self.received_eofs == self.previous_stage_size:
-                self.middleware.send_general(None)
-                self.middleware.close()
+            if message == None:
+                self.received_eofs += 1
+                if self.received_eofs == self.previous_stage_size:
+                    self.middleware.send_general(None)
+                    self.middleware.close()
+            else:
+                self.middleware.send_general(message)
         else:
-            line = json.loads(body)
+            line = message
             video_id = line[local_config["indexes"]["video_id"]]
             country = line[local_config["indexes"]["country"]]
             key = f"{video_id}-{country}"

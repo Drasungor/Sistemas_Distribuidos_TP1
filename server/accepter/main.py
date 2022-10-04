@@ -129,6 +129,7 @@ def main():
     processes_amount = local_config["processes_amount"]
 
     accepter_object = Accepter(first_connection)
+    accepter_object.send_general(incoming_files_amount) # Send the amount of countries
 
     child_processes: "list[mp.Queue]" = []
     for _ in range(processes_amount):
