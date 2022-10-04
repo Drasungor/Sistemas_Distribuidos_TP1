@@ -138,20 +138,21 @@ def receive_query_response(skt: socket):
     while not finished:
         received_message = json.loads(read_string(skt))
         print(f"BORRAR Lei el mensaje {received_message}")
-        query_type = received_message["type"]
         finished = received_message["finished"]
-        value = received_message["value"]
         if not finished:
-            if query_type == "first_query":
-                first_query_ptr.write(f"{value}\n")
-            elif query_type == "second_query":
-                image_bytes = base64.b64decode(value[1])
-                video_id = value[0]
-                aux_thumbnail_file_ptr = open(f"{second_query_folder}/{video_id}", "w")
-                aux_thumbnail_file_ptr.write(image_bytes)
-                aux_thumbnail_file_ptr.close()
-            elif query_type == "third_query":
-                third_query_ptr.write(f"{value}\n")
+            query_type = received_message["type"]
+            value = received_message["value"]
+            if not finished:
+                if query_type == "first_query":
+                    first_query_ptr.write(f"{value}\n")
+                elif query_type == "second_query":
+                    image_bytes = base64.b64decode(value[1])
+                    video_id = value[0]
+                    aux_thumbnail_file_ptr = open(f"{second_query_folder}/{video_id}", "w")
+                    aux_thumbnail_file_ptr.write(image_bytes)
+                    aux_thumbnail_file_ptr.close()
+                elif query_type == "third_query":
+                    third_query_ptr.write(f"{value}\n")
     first_query_ptr.close()
     third_query_ptr.close()
 
@@ -165,7 +166,10 @@ def main():
 
     child_processes: "list[mp.Process]" = []
     # TODO: ADD FOR LOOP UNTIL RANGE(processes_amount)
-    child_processes.append(mp.Process( target = send_files_data, args = [files_paths_queue]))
+    # child_processes.append(mp.Process( target = send_files_data, args = [files_paths_queue]))
+    for _ in range(processes_amount):
+        child_processes.append(mp.Process( target = send_files_data, args = [files_paths_queue]))
+
 
     for process in child_processes:
         process.start()

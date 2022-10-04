@@ -42,7 +42,9 @@ class Accepter():
         response = json.loads(body)
         if response == None:
             self.received_eofs += 1
+            print("Recibi un eof")
             if self.received_eofs == self.previous_stage_size:
+                print("Envié que termine")
                 send_json(self.socket, { "finished": True })
         else:
             sender = response["type"]
@@ -158,6 +160,7 @@ def main():
     first_connection, _ = server_socket.accept()
 
     connections_data = read_json(first_connection)
+    print(connections_data)
     categories = connections_data["categories"]
 
 

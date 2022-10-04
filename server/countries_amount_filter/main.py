@@ -38,7 +38,7 @@ class CountriesAmountFilter:
             video_set = self.videos_countries[video_id]
             previous_countries_amount = len(video_set)
             video_set.add(country)
-            print(video_set)
+            # print(video_set)
             current_countries_amount = len(video_set)
             if (current_countries_amount == self.countries_amount) and (previous_countries_amount != current_countries_amount):
                 print(f"Envio linea gracias al pais {line}")

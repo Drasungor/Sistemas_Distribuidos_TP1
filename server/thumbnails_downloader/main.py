@@ -25,7 +25,12 @@ class MaxViewsDay:
         if method.routing_key == general_config["general_subscription_routing_key"]:
         # if line == None: # TODO: check if this condition is correct
             self.received_eofs += 1
+            print("BORRAR Recibi un eof")
+            print(f"BORRAR Espero {self.previous_stage_size}")
+            print(f"BORRAR Tengo {self.received_eofs}")
+            print("BORRAR Recibi un eof")
             if self.received_eofs == self.previous_stage_size:
+                print("BORRAR termine")
                 self.middleware.send_general(None)
         else:
             line = json.loads(body)
@@ -36,6 +41,7 @@ class MaxViewsDay:
             self.middleware.send({ "type": cluster_type, "img_data": (video_id, base64.b64encode(img_data)) })
 
     def start_received_messages_processing(self):
+        print("BORRAR SOY THUMBNAILS DOWNLOADER")
         self.middleware.start_received_messages_processing()
 
 def main():
