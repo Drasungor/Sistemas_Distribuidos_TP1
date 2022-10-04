@@ -33,8 +33,10 @@ class TrendingDaysFilter:
         else:
             line = json.loads(body)
             # print(f"Received line {line}")
-            video_id = line[general_config["indexes"]["video_id"]]
-            country = line[general_config["indexes"]["country"]]
+            # video_id = line[general_config["indexes"]["video_id"]]
+            # country = line[general_config["indexes"]["country"]]
+            video_id = line[local_config["indexes"]["video_id"]]
+            country = line[local_config["indexes"]["country"]]
             key = f"{video_id}-{country}"
             if not (key in self.trending_days_amounts):
                 # self.trending_days_amounts[video_id] = 0
@@ -44,7 +46,8 @@ class TrendingDaysFilter:
             self.trending_days_amounts_aux[key] += 1
             current_video_set = self.trending_days_amounts[key]
             previous_trending_days_amount = len(self.trending_days_amounts[key])
-            self.trending_days_amounts[key].add(line[general_config["indexes"]["trending_date"]])
+            # self.trending_days_amounts[key].add(line[general_config["indexes"]["trending_date"]])
+            self.trending_days_amounts[key].add(line[local_config["indexes"]["trending_date"]])
             # print(type(line[general_config["indexes"]["trending_date"]]))
             # if len(self.trending_days_amounts[key]) >= 21:
             #     print(key)

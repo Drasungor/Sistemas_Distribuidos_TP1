@@ -75,7 +75,7 @@ def send_json(skt: socket, data):
     send_string(skt, json.dumps(data))
 
 # def handle_connection(connections_queue: mp.Queue, middleware: MOM):
-def handle_connection(connections_queue: mp.Queue):
+def handle_connection(connections_queue: mp.Queue, categories):
     print("Soy un subproceso")
     middleware = MOM(f"{cluster_type}_sender", None)
     read_socket = connections_queue.get()
@@ -89,17 +89,38 @@ def handle_connection(connections_queue: mp.Queue):
             # dict = { "data": json.dumps(data), "file_finished": file_finished }
             read_data = read_json(read_socket)
         
+            # print("{read_data}")
+
             # BORRAR
             read_lines += len(read_data["data"])
-
+            batch_country_prefix = read_data["country"]
+            current_country_categories = categories[batch_country_prefix]
             should_keep_iterating = not read_data["file_finished"]
             if not should_keep_iterating:
                 should_keep_iterating = read_json(read_socket)
             if len(read_data["data"]) != 0:
                 for line in read_data["data"]:
-                    middleware.send(line)
-                    pass
-                    # print(f"Category: {line[0]}")
+
+                    # category_id = str(current_line[config["category_id_index"]])
+                    # if category_id in categories:
+                    #     current_line.append(categories[category_id])
+                    # else:
+                    #     current_line.append(None)
+                    indexes = general_config["indexes"]
+                    category_index = indexes["category"]
+                    category_id = str(line[category_index])
+                    if category_id in current_country_categories:
+                        line[category_index] = current_country_categories[category_id]
+                    else:
+                        line[category_index] = None
+                    line.append(batch_country_prefix)
+                    kept_attributes = local_config["kept_columns"]
+                    kept_attributes = list(map(lambda column: indexes[column], kept_attributes))
+                    kept_attributes.sort()
+                    sent_line = [] # ["video_id", "title", "trending_date", "tags", "views", "likes", "category_name", "country"]
+                    for index in kept_attributes:
+                        sent_line.append(line[index])
+                    middleware.send(sent_line)
         # BORRAR
         print(f"Read lines: {read_lines}")
 
@@ -132,6 +153,7 @@ def main():
     first_connection, _ = server_socket.accept()
 
     connections_data = read_json(first_connection)
+    categories = connections_data["categories"]
 
 
     # accepter_object = Accepter(first_connection)
@@ -154,7 +176,7 @@ def main():
     child_processes: "list[mp.Queue]" = []
     for _ in range(processes_amount):
         # new_process = mp.Process( target = handle_connection, args = [accepter_queue, middleware])
-        new_process = mp.Process( target = handle_connection, args = [accepter_queue])
+        new_process = mp.Process( target = handle_connection, args = [accepter_queue, categories])
         child_processes.append(new_process)
         new_process.start()
     for _ in range(incoming_connections):

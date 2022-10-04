@@ -26,6 +26,9 @@ class LikesFilter:
 
     def process_received_line(self, ch, method, properties, body):
         line = json.loads(body)
+
+        # print(f"Nueva line {line}")
+
         if method.routing_key == general_config["general_subscription_routing_key"]:
         # if line == None:
             self.received_eofs += 1
@@ -35,7 +38,8 @@ class LikesFilter:
                 self.middleware.send_general(None)
         else:
             # print(line)
-            likes_amount: str = line[general_config["indexes"]["likes"]]
+            # likes_amount: str = line[general_config["indexes"]["likes"]]
+            likes_amount: str = line[local_config["indexes"]["likes"]]
             if int(likes_amount) >= local_config["likes_min"]:
                 self.middleware.send(line)
 

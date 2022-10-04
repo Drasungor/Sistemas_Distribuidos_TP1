@@ -11,7 +11,7 @@ class ClosedSocket(Exception):
 config_file_path = "config.json"
 config = None
 with open(config_file_path, "r") as config_file:
-    config = json.load(open(config_file_path, "r"))
+    config = json.load(config_file)
 
 def send_string(skt: socket, data: str):
     encoded_data = data.encode()
@@ -37,13 +37,21 @@ def read_string(skt: socket):
 def send_number(skt: socket, number: int):
     skt.sendall(number.to_bytes(4, "big"))
 
-def send_connection_data(skt: socket, connections_amount: int, files_amount: int):
-    data_dict = { "connections_amount": connections_amount, "files_amount": files_amount }
+def send_connection_data(skt: socket, connections_amount: int, files_paths):
+    categories = {}
+    for country_files in files_paths:
+        category_file_path: str = country_files["category"]
+        country_prefix = category_file_path.split("/")[2][0:2]
+        # with open(category_file_path, "r") as current_category_file:
+        #     aux = json.load(current_category_file)
+        categories[country_prefix] = get_categories_dict(category_file_path)
+
+    data_dict = { "connections_amount": connections_amount, "files_amount": len(files_paths), "categories": categories }
     send_string(skt, json.dumps(data_dict))
 
 
-def send_cached_data(skt: socket, data, file_finished: bool):
-    dict = { "data": data, "file_finished": file_finished }
+def send_cached_data(skt: socket, data, country_prefix: str, file_finished: bool):
+    dict = { "data": data, "file_finished": file_finished, "country": country_prefix }
     send_string(skt, json.dumps(dict))
 
 def get_categories_dict(json_path: str):
@@ -92,14 +100,14 @@ def send_file_data(skt: socket, files_paths):
                 current_line.append(categories[category_id])
             else:
                 current_line.append(None)
-            current_line.append(country_prefix)
+            # current_line.append(country_prefix)
             lines_accumulator.append(current_line)
             if len(lines_accumulator) == batch_size:
-                send_cached_data(skt, lines_accumulator, False)
+                send_cached_data(skt, lines_accumulator, country_prefix, False)
                 lines_accumulator = []
             # current_line = next(csv_reader, None)
             current_line = get_next_line(csv_reader)
-        send_cached_data(skt, lines_accumulator, True)
+        send_cached_data(skt, lines_accumulator, country_prefix, True)
 
 def send_files_data(files_paths_queue: mp.Queue):
     # print("BORRAR nuevo proceso")
@@ -168,7 +176,8 @@ def main():
     main_process_connection_socket.connect((connection_address, connection_port))
 
     # send_number(main_process_connection_socket, len(files_paths))
-    send_connection_data(main_process_connection_socket, len(child_processes), len(files_paths))
+    # send_connection_data(main_process_connection_socket, len(child_processes), len(files_paths))
+    send_connection_data(main_process_connection_socket, len(child_processes), files_paths)
     
     for paths in files_paths:
         files_paths_queue.put(paths)

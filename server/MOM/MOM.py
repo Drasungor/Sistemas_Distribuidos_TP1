@@ -18,7 +18,7 @@ class MOM:
         self.channel = self.connection.channel()
         self.receiver = None # exchange | queue
         self.sender = None # [(exchange name, [hashing attributes], connections_amount)] | [queue name]
-        self.connection_mode = connection_mode
+        self.connection_mode = None
         connections = local_config["connections"]
         connections_names = list(connections.keys())
         connections_names.append("accepter_sender")
@@ -68,6 +68,8 @@ class MOM:
 
             raise ValueError(f"Unexpected connection mode {connection_mode}, it should be one of the following: {connections.keys()}")
 
+        self.connection_mode = connection_mode
+
         if receives_messages:
             if subscribes_to_keywords:
                 self.channel.exchange_declare(exchange = connection_mode, exchange_type = "direct")
@@ -96,8 +98,10 @@ class MOM:
                 self.channel.queue_declare(queue = connection)
 
 
-    def __get_hashing_key(self, line, hashing_attributes):
-        indexes_object = general_config["indexes"]
+    def __get_hashing_key(self, line, receiving_end, hashing_attributes):
+        # indexes_object = general_config["indexes"]
+        # print(f"Receiving end: {receiving_end}")
+        indexes_object = config[receiving_end]["indexes"]
         hashing_attributes_iterator = iter(hashing_attributes)
         hashing_string = line[indexes_object[next(hashing_attributes_iterator)]]
         for hashing_attribute in hashing_attributes_iterator: # Extends to more than 2 receiving ends
@@ -112,7 +116,7 @@ class MOM:
             for receiving_end in self.sender:
                 line = message
                 hashing_attributes = receiving_end[1] # TODO: this should be changed for when attributes are dropped between pipeline stages
-                hashing_string = self.__get_hashing_key(line, hashing_attributes)
+                hashing_string = self.__get_hashing_key(line, receiving_end[0], hashing_attributes)
                 routing_key_number = hash(hashing_string) % receiving_end[2]
                 self.channel.basic_publish(exchange = receiving_end[0], routing_key = str(routing_key_number), body = message_string)
         else:

@@ -29,8 +29,10 @@ class ViewsSum:
                 self.middleware.send_general(self.aggregation_dict)
                 self.middleware.send_general(None)
         else:
-            date: str = line[general_config["indexes"]["trending_date"]]
-            view_count: int = int(line[general_config["indexes"]["views"]])
+            # date: str = line[general_config["indexes"]["trending_date"]]
+            # view_count: int = int(line[general_config["indexes"]["views"]])
+            date: str = line[local_config["indexes"]["trending_date"]]
+            view_count: int = int(line[local_config["indexes"]["views"]])
             if not (date in self.aggregation_dict):
                 self.aggregation_dict[date] = view_count
             else:

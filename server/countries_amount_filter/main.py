@@ -29,8 +29,10 @@ class CountriesAmountFilter:
                 self.middleware.send_general(None)
         else:
             # print(f"Recibi linea {line}")
-            video_id = line[general_config["indexes"]["video_id"]]
-            country = line[general_config["indexes"]["country"]]
+            # video_id = line[general_config["indexes"]["video_id"]]
+            # country = line[general_config["indexes"]["country"]]
+            video_id = line[local_config["indexes"]["video_id"]]
+            country = line[local_config["indexes"]["country"]]
             if not (video_id in self.videos_countries):
                 self.videos_countries[video_id] = set()
             video_set = self.videos_countries[video_id]

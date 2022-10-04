@@ -5,12 +5,13 @@
         "indexes": {
             "video_id": 0,
             "title": 1,
+            "category": 5,
             "trending_date": 6,
             "tags": 7,
             "views": 8,
             "likes": 9,
-            "category_name": 10,
-            "country": 17
+            "thumbnail_link": 12,
+            "country": 16
         },
         "general_subscription_routing_key": "-1"
     },
@@ -50,13 +51,35 @@
         "bound_port": 8080,
         "listen_backlog": 10,
         "receives_from": ["duplication_filter", "max_views_day", "thumbnails_downloader"],
-        "processes_amount": 3
+        "processes_amount": 3,
+        "kept_columns": ["video_id", "title", "category", "trending_date", "tags", "views", "likes", "country"],
+        "indexes": {
+            "video_id": 0,
+            "title": 1,
+            "category": 5,
+            "trending_date": 6,
+            "tags": 7,
+            "views": 8,
+            "likes": 9,
+            "thumbnail_link": 12,
+            "country": 16
+        }
     },
     "likes_filter": {
         "computers_amount": 1,
         "likes_min": 5000000,
         "receives_from": "accepter",
-        "hashed_by": ["video_id"]
+        "hashed_by": ["video_id"],
+        "indexes": {
+            "video_id": 0,
+            "title": 1,
+            "category": 2,
+            "trending_date": 3,
+            "tags": 4,
+            "views": 5,
+            "likes": 6,
+            "country": 7
+        }
     },
     "funny_filter": {
         "computers_amount": 1,
@@ -82,7 +105,17 @@
         "computers_amount": 1,
         "receives_from": "accepter",
         "min_trending_days": 21,
-        "hashed_by": ["video_id", "country"]
+        "hashed_by": ["video_id", "country"],
+        "indexes": {
+            "video_id": 0,
+            "title": 1,
+            "category": 2,
+            "trending_date": 3,
+            "tags": 4,
+            "views": 5,
+            "likes": 6,
+            "country": 7
+        }
     },
     "countries_amount_filter": {
         "computers_amount": 1,
