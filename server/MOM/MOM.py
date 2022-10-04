@@ -9,9 +9,6 @@ with open(config_file_path, "r") as config_file:
 general_config = config["general"]
 local_config = config["MOM"]
 
-
-
-
 class MOM:
     def __init__(self, connection_mode: str, receiver_callback):
         self.connection = pika.BlockingConnection(pika.ConnectionParameters(local_config["broker_address"]))
@@ -29,9 +26,6 @@ class MOM:
 
         subscribes_to_keywords = False # reads from publisher/subscriber
         self.sends_to_publisher = False # sends to publisher/subscriber
-
-        # TODO: HACER QUE LOS CONFIGS SE LLAMEN IGUAL QUE LAS COLAS RECEPTORAS, ASI NO HAY QUE HARDCODEAR LOS PROCESOS A LOS QUE SE ENVIAN COSAS (EJ CANTIDAD DE PCS),
-        # IGUAL TAL VEZ NO TIENE MUCHO SENTIDO PORQUE IGUAL EL RUTEO POR HASHING DEPENDE DEL DESTINO, IGUAL ESO TAMBIEN PODRIA LLEGAR A SER CONFIGURABLE
 
         if connection_mode == "accepter" or connection_mode == "accepter_sender":
             if connection_mode == "accepter_sender":
@@ -93,7 +87,6 @@ class MOM:
                 self.sender.append((connecting_to, config[connecting_to]["hashed_by"], config[connecting_to]["computers_amount"])) # (exchange name, [hashing attributes], receiver computers amount)
                 self.channel.exchange_declare(exchange = connecting_to, exchange_type = "direct")
         else:
-            # self.sender = (connections[connection_mode]["sends_to"], "")
             self.sender = []
             for connection in connections[connection_mode]["sends_to"]:
                 self.sender.append(connection)
@@ -101,15 +94,12 @@ class MOM:
 
 
     def __get_hashing_key(self, line, receiving_end, hashing_attributes):
-        # indexes_object = general_config["indexes"]
-        # print(f"Receiving end: {receiving_end}")
         indexes_object = config[receiving_end]["indexes"]
         hashing_attributes_iterator = iter(hashing_attributes)
         hashing_string = line[indexes_object[next(hashing_attributes_iterator)]]
         for hashing_attribute in hashing_attributes_iterator: # Extends to more than 2 receiving ends
             aux = line[indexes_object[hashing_attribute]]
             hashing_string += f"-{aux}"
-        # print(f"BORRAR Hashing string: {hashing_string}")
         return hashing_string
 
     def send(self, message):
@@ -117,7 +107,7 @@ class MOM:
         if self.sends_to_publisher:
             for receiving_end in self.sender:
                 line = message
-                hashing_attributes = receiving_end[1] # TODO: this should be changed for when attributes are dropped between pipeline stages
+                hashing_attributes = receiving_end[1]
                 hashing_string = self.__get_hashing_key(line, receiving_end[0], hashing_attributes)
                 routing_key_number = hash(hashing_string) % receiving_end[2]
                 self.channel.basic_publish(exchange = receiving_end[0], routing_key = str(routing_key_number), body = message_string)
@@ -130,21 +120,15 @@ class MOM:
         indexes = config[self.connection_mode]["indexes"]
         kept_attributes = list(map(lambda column: indexes[column], kept_attributes))
         kept_attributes.sort()
-        sent_line = [] # ["video_id", "title", "category", "trending_date", "tags", "views", "likes", "thumbnail_link", "country"]
-        # print(f"BORRAR Kept attributes: {kept_attributes}")
+        sent_line = []
         for index in kept_attributes:
             sent_line.append(line[index])
-        # print(f"BORRAR Previous line length: {len(line)}")
-        # print(f"BORRAR Previous line: {line}")
-        # print(f"BORRAR Line sent: {sent_line}")
         self.send(sent_line)
 
     def send_general(self, message):
         message_string = json.dumps(message)
         if self.sends_to_publisher:
             for receiving_end in self.sender:
-                # for i in range(0, receiving_end[2]):
-                #     self.channel.basic_publish(exchange = receiving_end[0], routing_key = str(i), body = message_string)
                 self.channel.basic_publish(exchange = receiving_end[0], routing_key = general_config["general_subscription_routing_key"], body = message_string)
         else:
             for receiving_end in self.sender:

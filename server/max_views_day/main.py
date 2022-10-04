@@ -21,7 +21,7 @@ class MaxViewsDay:
 
     def process_received_message(self, ch, method, properties, body):
         received_message = json.loads(body)
-        if received_message == None: # TODO: check if this condition is correct
+        if received_message == None:
             self.received_eofs += 1
             if self.received_eofs == self.previous_stage_size:
                 final_message_dict = { "type": cluster_type, "max_day": self.max_views_date }
