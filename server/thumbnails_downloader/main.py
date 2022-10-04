@@ -32,6 +32,7 @@ class MaxViewsDay:
             if self.received_eofs == self.previous_stage_size:
                 print("BORRAR termine")
                 self.middleware.send_general(None)
+                self.middleware.close()
         else:
             line = json.loads(body)
             print("Me llego un link para bajar thumbnail")

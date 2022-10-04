@@ -26,6 +26,7 @@ class FunnyFilter:
             self.received_eofs += 1
             if self.received_eofs == self.previous_stage_size:
                 self.middleware.send_general(None)
+                self.middleware.close()
         else:
             # tags: str = line[general_config["indexes"]["tags"]]
             tags: str = line[local_config["indexes"]["tags"]]
