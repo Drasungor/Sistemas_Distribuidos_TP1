@@ -23,15 +23,11 @@ class DuplicationFilter:
         line = json.loads(body)
 
         if method.routing_key == general_config["general_subscription_routing_key"]:
-        # if line == None:
             self.received_eofs += 1
             if self.received_eofs == self.previous_stage_size:
                 self.middleware.send_general(None)
                 self.middleware.close()
         else:
-            # video_id = line[general_config["indexes"]["video_id"]]
-            # title = line[general_config["indexes"]["title"]]
-            # category = line[general_config["indexes"]["category_name"]]
             video_id = line[local_config["indexes"]["video_id"]]
             title = line[local_config["indexes"]["title"]]
             category = line[local_config["indexes"]["category"]]
