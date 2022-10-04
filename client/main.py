@@ -42,8 +42,6 @@ def send_connection_data(skt: socket, connections_amount: int, files_paths):
     for country_files in files_paths:
         category_file_path: str = country_files["category"]
         country_prefix = category_file_path.split("/")[2][0:2]
-        # with open(category_file_path, "r") as current_category_file:
-        #     aux = json.load(current_category_file)
         categories[country_prefix] = get_categories_dict(category_file_path)
 
     data_dict = { "connections_amount": connections_amount, "files_amount": len(files_paths), "categories": categories }
@@ -80,38 +78,25 @@ def send_file_data(skt: socket, files_paths):
 
     batch_size = config["batch_size"]
 
-    # TODO: ENVIAR LOS ARCHIVOS DE CATEGORIAS, EL JOIN TIENE QUE HACERSE EN EL SERVER, probablemente en el duplicator filter, 
-    #       TAMBIEN DEBERÍA AGREGARSE EN EL SERVER EL PAIS EN CADA LINEA
     categories = get_categories_dict(files_paths["category"])
     trending_file_path: str = files_paths["trending"]
     country_prefix = trending_file_path.split("/")[2][0:2]
     with open(trending_file_path) as trending_file_ptr:
         csv_reader = csv.reader(trending_file_ptr)
-        # csv_reader = csv.reader(trending_file_ptr, delimiter = ",", quotechar='"')
         next(csv_reader) #Discards header
         lines_accumulator = []
-        # current_line = next(csv_reader, None)
         current_line = get_next_line(csv_reader)
         while current_line != None:
             if len(current_line) != 16:
                 print(f"Expected length 16, got length {len(current_line)} with line {current_line}")
-                
-            # category_id = str(current_line[config["category_id_index"]])
-            # if category_id in categories:
-            #     current_line.append(categories[category_id])
-            # else:
-            #     current_line.append(None)
-            # current_line.append(country_prefix)
             lines_accumulator.append(current_line)
             if len(lines_accumulator) == batch_size:
                 send_cached_data(skt, lines_accumulator, country_prefix, False)
                 lines_accumulator = []
-            # current_line = next(csv_reader, None)
             current_line = get_next_line(csv_reader)
         send_cached_data(skt, lines_accumulator, country_prefix, True)
 
 def send_files_data(files_paths_queue: mp.Queue):
-    # print("BORRAR nuevo proceso")
     connection_address = config["accepter_address"]
     connection_port = config["accepter_port"]
     process_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -171,13 +156,9 @@ def main():
     main_process_connection_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     main_process_connection_socket.connect((connection_address, connection_port))
 
-    # send_number(main_process_connection_socket, len(files_paths))
-    # send_connection_data(main_process_connection_socket, len(child_processes), len(files_paths))
     send_connection_data(main_process_connection_socket, processes_amount, files_paths)
 
     child_processes: "list[mp.Process]" = []
-    # TODO: ADD FOR LOOP UNTIL RANGE(processes_amount)
-    # child_processes.append(mp.Process( target = send_files_data, args = [files_paths_queue]))
     for _ in range(processes_amount):
         child_processes.append(mp.Process( target = send_files_data, args = [files_paths_queue]))
 
@@ -191,7 +172,6 @@ def main():
         files_paths_queue.put(None)
     files_paths_queue.close()
 
-    # TODO: WAIT FOR QUERY RESPONSE
     receive_query_response(main_process_connection_socket)
 
     files_paths_queue.join_thread()
