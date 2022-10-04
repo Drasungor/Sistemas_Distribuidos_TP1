@@ -2,17 +2,6 @@
     "general": {
         "rabbit_address": "rabbitmq",
         "rabbit_port": "15672",
-        "indexes": {
-            "video_id": 0,
-            "title": 1,
-            "category": 5,
-            "trending_date": 6,
-            "tags": 7,
-            "views": 8,
-            "likes": 9,
-            "thumbnail_link": 12,
-            "country": 16
-        },
         "general_subscription_routing_key": "-1"
     },
     "MOM": {

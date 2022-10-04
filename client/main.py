@@ -95,11 +95,11 @@ def send_file_data(skt: socket, files_paths):
         while current_line != None:
             if len(current_line) != 16:
                 print(f"Expected length 16, got length {len(current_line)} with line {current_line}")
-            category_id = str(current_line[config["category_id_index"]])
-            if category_id in categories:
-                current_line.append(categories[category_id])
-            else:
-                current_line.append(None)
+            # category_id = str(current_line[config["category_id_index"]])
+            # if category_id in categories:
+            #     current_line.append(categories[category_id])
+            # else:
+            #     current_line.append(None)
             # current_line.append(country_prefix)
             lines_accumulator.append(current_line)
             if len(lines_accumulator) == batch_size:

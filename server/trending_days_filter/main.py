@@ -35,6 +35,7 @@ class TrendingDaysFilter:
             # print(f"Received line {line}")
             # video_id = line[general_config["indexes"]["video_id"]]
             # country = line[general_config["indexes"]["country"]]
+            # print(line)
             video_id = line[local_config["indexes"]["video_id"]]
             country = line[local_config["indexes"]["country"]]
             key = f"{video_id}-{country}"
@@ -56,7 +57,8 @@ class TrendingDaysFilter:
             current_trending_days_amount = len(self.trending_days_amounts[key])
             if current_trending_days_amount == local_config["min_trending_days"] and current_trending_days_amount != previous_trending_days_amount:
                 # print(f"Sending line with 21 days: {line}")
-                self.middleware.send(line)
+                # self.middleware.send(line)
+                self.middleware.send_line(line)
 
     def start_received_messages_processing(self):
         self.middleware.start_received_messages_processing()

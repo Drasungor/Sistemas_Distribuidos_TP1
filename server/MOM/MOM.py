@@ -123,6 +123,19 @@ class MOM:
             for receiving_end in self.sender:
                 self.channel.basic_publish(exchange = "", routing_key = receiving_end, body = message_string)
 
+    def send_line(self, line):
+        kept_attributes = config[self.connection_mode]["kept_columns"]
+        indexes = config[self.connection_mode]["indexes"]
+        kept_attributes = list(map(lambda column: indexes[column], kept_attributes))
+        kept_attributes.sort()
+        sent_line = [] # ["video_id", "title", "category", "trending_date", "tags", "views", "likes", "thumbnail_link", "country"]
+        # print(f"BORRAR Kept attributes: {kept_attributes}")
+        for index in kept_attributes:
+            sent_line.append(line[index])
+        # print(f"BORRAR Previous line length: {len(line)}")
+        # print(f"BORRAR Previous line: {line}")
+        # print(f"BORRAR Line sent: {sent_line}")
+        self.send(sent_line)
 
     def send_general(self, message):
         message_string = json.dumps(message)

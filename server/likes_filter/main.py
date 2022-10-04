@@ -41,7 +41,8 @@ class LikesFilter:
             # likes_amount: str = line[general_config["indexes"]["likes"]]
             likes_amount: str = line[local_config["indexes"]["likes"]]
             if int(likes_amount) >= local_config["likes_min"]:
-                self.middleware.send(line)
+                # self.middleware.send(line)
+                self.middleware.send_line(line)
 
     def start_received_messages_processing(self):
         self.middleware.start_received_messages_processing()

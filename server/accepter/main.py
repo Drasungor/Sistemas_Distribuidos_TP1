@@ -106,7 +106,8 @@ def handle_connection(connections_queue: mp.Queue, categories):
                     #     current_line.append(categories[category_id])
                     # else:
                     #     current_line.append(None)
-                    indexes = general_config["indexes"]
+                    # indexes = general_config["indexes"]
+                    indexes = local_config["indexes"]
                     category_index = indexes["category"]
                     category_id = str(line[category_index])
                     if category_id in current_country_categories:
@@ -114,13 +115,16 @@ def handle_connection(connections_queue: mp.Queue, categories):
                     else:
                         line[category_index] = None
                     line.append(batch_country_prefix)
-                    kept_attributes = local_config["kept_columns"]
-                    kept_attributes = list(map(lambda column: indexes[column], kept_attributes))
-                    kept_attributes.sort()
-                    sent_line = [] # ["video_id", "title", "trending_date", "tags", "views", "likes", "category_name", "country"]
-                    for index in kept_attributes:
-                        sent_line.append(line[index])
-                    middleware.send(sent_line)
+                    # kept_attributes = local_config["kept_columns"]
+                    # kept_attributes = list(map(lambda column: indexes[column], kept_attributes))
+                    # kept_attributes.sort()
+                    # sent_line = [] # ["video_id", "title", "trending_date", "tags", "views", "likes", "category_name", "country"]
+                    # for index in kept_attributes:
+                    #     sent_line.append(line[index])
+                    # middleware.send(sent_line)
+
+                    middleware.send_line(line)
+
                     # middleware.send(line)
         # BORRAR
         print(f"Read lines: {read_lines}")
