@@ -46,10 +46,11 @@ class Accepter():
             if self.received_eofs == self.previous_stage_size:
                 print("Envié que termine")
                 send_json(self.socket, { "finished": True })
+                self.middleware.close()
         else:
             sender = response["type"]
-            print("Response: ")
-            print(response)
+            # print("Response: ")
+            # print(response)
             if sender == "duplication_filter":
                 received_tuple = response["tuple"]
                 send_json(self.socket, { "type": "first_query", "value": received_tuple, "finished": False })
@@ -160,6 +161,7 @@ def main():
     first_connection, _ = server_socket.accept()
 
     connections_data = read_json(first_connection)
+    print("VOY A IMPRIMIR DATA DE CONEXIONES")
     print(connections_data)
     categories = connections_data["categories"]
 
@@ -170,7 +172,7 @@ def main():
 
     incoming_connections = connections_data["connections_amount"]
 
-    print(f"BORRAR cantidad conexiones: {incoming_connections}")
+    # print(f"BORRAR cantidad conexiones: {incoming_connections}")
 
     incoming_files_amount = connections_data["files_amount"]
     # processes_amount = min([local_config["processes_amount"], mp.cpu_count(), incoming_connections])

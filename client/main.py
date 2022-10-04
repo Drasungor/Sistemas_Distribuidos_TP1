@@ -95,6 +95,7 @@ def send_file_data(skt: socket, files_paths):
         while current_line != None:
             if len(current_line) != 16:
                 print(f"Expected length 16, got length {len(current_line)} with line {current_line}")
+                
             # category_id = str(current_line[config["category_id_index"]])
             # if category_id in categories:
             #     current_line.append(categories[category_id])
@@ -164,6 +165,16 @@ def main():
     processes_amount = min([config["processes_amount"], mp.cpu_count(), len(files_paths)])
     files_paths_queue = mp.Queue()
 
+
+    connection_address = config["accepter_address"]
+    connection_port = config["accepter_port"]
+    main_process_connection_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    main_process_connection_socket.connect((connection_address, connection_port))
+
+    # send_number(main_process_connection_socket, len(files_paths))
+    # send_connection_data(main_process_connection_socket, len(child_processes), len(files_paths))
+    send_connection_data(main_process_connection_socket, processes_amount, files_paths)
+
     child_processes: "list[mp.Process]" = []
     # TODO: ADD FOR LOOP UNTIL RANGE(processes_amount)
     # child_processes.append(mp.Process( target = send_files_data, args = [files_paths_queue]))
@@ -173,15 +184,6 @@ def main():
 
     for process in child_processes:
         process.start()
-
-    connection_address = config["accepter_address"]
-    connection_port = config["accepter_port"]
-    main_process_connection_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    main_process_connection_socket.connect((connection_address, connection_port))
-
-    # send_number(main_process_connection_socket, len(files_paths))
-    # send_connection_data(main_process_connection_socket, len(child_processes), len(files_paths))
-    send_connection_data(main_process_connection_socket, len(child_processes), files_paths)
     
     for paths in files_paths:
         files_paths_queue.put(paths)
