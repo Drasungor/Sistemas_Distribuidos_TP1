@@ -24,7 +24,6 @@ class ViewsSum:
         if method.routing_key == general_config["general_subscription_routing_key"]:
             self.received_eofs += 1
             if self.received_eofs == self.previous_stage_size:
-                print(f"VOY A ENVIAR NONE, received eofs: {self.received_eofs}, expected eofs: {self.previous_stage_size}")
                 self.middleware.send_general(self.aggregation_dict)
                 self.middleware.send_general(None)
                 self.middleware.close()
