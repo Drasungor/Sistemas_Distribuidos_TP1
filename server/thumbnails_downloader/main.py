@@ -23,26 +23,17 @@ class MaxViewsDay:
 
     def process_received_message(self, ch, method, properties, body):
         if method.routing_key == general_config["general_subscription_routing_key"]:
-        # if line == None: # TODO: check if this condition is correct
             self.received_eofs += 1
-            print("BORRAR Recibi un eof")
-            print(f"BORRAR Espero {self.previous_stage_size}")
-            print(f"BORRAR Tengo {self.received_eofs}")
-            print("BORRAR Recibi un eof")
             if self.received_eofs == self.previous_stage_size:
-                print("BORRAR termine")
                 self.middleware.send_general(None)
                 self.middleware.close()
         else:
             line = json.loads(body)
-            print("Me llego un link para bajar thumbnail")
-            # video_id = line[general_config["indexes"]["video_id"]]
             video_id = line[local_config["indexes"]["video_id"]]
             img_data = requests.get(f"https://img.youtube.com/vi/{video_id}/0.jpg").content
             self.middleware.send({ "type": cluster_type, "img_data": (video_id, base64.b64encode(img_data)) })
 
     def start_received_messages_processing(self):
-        print("BORRAR SOY THUMBNAILS DOWNLOADER")
         self.middleware.start_received_messages_processing()
 
 def main():

@@ -22,7 +22,6 @@ class ViewsSum:
     def process_received_message(self, ch, method, properties, body):
         line = json.loads(body)
         if method.routing_key == general_config["general_subscription_routing_key"]:
-        # if line == None:
             self.received_eofs += 1
             if self.received_eofs == self.previous_stage_size:
                 print(f"VOY A ENVIAR NONE, received eofs: {self.received_eofs}, expected eofs: {self.previous_stage_size}")
@@ -30,8 +29,6 @@ class ViewsSum:
                 self.middleware.send_general(None)
                 self.middleware.close()
         else:
-            # date: str = line[general_config["indexes"]["trending_date"]]
-            # view_count: int = int(line[general_config["indexes"]["views"]])
             date: str = line[local_config["indexes"]["trending_date"]]
             view_count: int = int(line[local_config["indexes"]["views"]])
             if not (date in self.aggregation_dict):

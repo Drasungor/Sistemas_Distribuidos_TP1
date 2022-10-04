@@ -38,7 +38,6 @@ class MOM:
             # Receiving
             # subscribes_to_keywords is already false
                 
-        # elif  connection_mode in ["funny_filter", "likes_filter", "trending_days_filter"]:
         elif  connection_mode in ["funny_filter", "likes_filter", "countries_amount_filter", "trending_days_filter"]:
             # Sending
             self.sends_to_publisher = True
@@ -46,7 +45,6 @@ class MOM:
             # Receiving
             subscribes_to_keywords = True
 
-        # elif connection_mode in ["duplication_filter", "views_sum", "countries_amount_filter", "thumbnails_downloader"]:
         elif connection_mode in ["duplication_filter", "views_sum", "thumbnails_downloader"]:
             # Sending
             # sends_to_publisher is already false
