@@ -37,7 +37,6 @@ class CountriesAmountFilter:
             video_set.add(country)
             current_countries_amount = len(video_set)
             if (current_countries_amount == self.countries_amount) and (previous_countries_amount != current_countries_amount):
-                print(f"Envio linea gracias al pais {line}")
                 self.middleware.send(video_id)
 
     def start_received_messages_processing(self):
