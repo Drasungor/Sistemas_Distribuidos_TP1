@@ -55,7 +55,7 @@
         }
     },
     "likes_filter": {
-        "computers_amount": 1,
+        "computers_amount": 2,
         "likes_min": 5000000,
         "receives_from": "accepter",
         "hashed_by": ["video_id"],
@@ -73,7 +73,7 @@
         "kept_columns": ["video_id", "title", "category", "trending_date", "tags", "views"]
     },
     "funny_filter": {
-        "computers_amount": 1,
+        "computers_amount": 2,
         "tag": "funny",
         "receives_from": "likes_filter",
         "hashed_by": ["video_id"],
@@ -88,7 +88,7 @@
         "kept_columns": ["video_id", "title", "category"]
     },
     "duplication_filter": {
-        "computers_amount": 1,
+        "computers_amount": 2,
         "receives_from": "funny_filter",
         "hashed_by": ["video_id"],
         "indexes": {
@@ -98,7 +98,7 @@
         }
     },
     "views_sum": {
-        "computers_amount": 1,
+        "computers_amount": 2,
         "receives_from": "likes_filter",
         "hashed_by": ["trending_date"],
         "indexes": {
@@ -115,7 +115,7 @@
         "computers_amount": 1
     },
     "trending_days_filter": {
-        "computers_amount": 1,
+        "computers_amount": 2,
         "receives_from": "accepter",
         "min_trending_days": 21,
         "hashed_by": ["video_id", "country"],
@@ -133,7 +133,7 @@
         "kept_columns": ["video_id", "thumbnail_link", "country"]
     },
     "countries_amount_filter": {
-        "computers_amount": 1,
+        "computers_amount": 2,
         "receives_from": "trending_days_filter",
         "hashed_by": ["video_id"],
         "indexes": {
@@ -144,7 +144,7 @@
         "kept_columns": ["video_id", "thumbnail_link"]
     },
     "thumbnails_downloader": {
-        "computers_amount": 1,
+        "computers_amount": 2,
         "receives_from": "countries_amount_filter",
         "hashed_by": ["video_id"],
         "indexes": {
