@@ -26,31 +26,18 @@ class LikesFilter:
 
     def process_received_line(self, ch, method, properties, body):
         line = json.loads(body)
-
-        # print(f"Nueva line {line}")
-
         if method.routing_key == general_config["general_subscription_routing_key"]:
-        # if line == None:
             self.received_eofs += 1
-            print(f"Current received eofs: {self.received_eofs}")
             if self.received_eofs == self.previous_stage_size:
-                print(f"VOY A ENVIAR NONE, received eofs: {self.received_eofs}, expected eofs: {self.previous_stage_size}")
                 self.middleware.send_general(None)
-                print("BORRAR VOY A MATAR LA CONEXION")
                 self.middleware.close()
         else:
-            # print(line)
-            # likes_amount: str = line[general_config["indexes"]["likes"]]
             likes_amount: str = line[local_config["indexes"]["likes"]]
             if int(likes_amount) >= local_config["likes_min"]:
-                # self.middleware.send(line)
                 self.middleware.send_line(line)
 
     def start_received_messages_processing(self):
         self.middleware.start_received_messages_processing()
-        print("BORRAR SALI DEL PROCESAMIENTO DE MENSAJES")
-        # print("BORRAR VOY A MATAR LA CONEXION")
-        # self.middleware.close()
 
 def main():
     wrapper = LikesFilter()
