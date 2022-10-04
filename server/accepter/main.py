@@ -32,9 +32,6 @@ class Accepter():
         self.middleware.start_received_messages_processing()
 
     def process_received_message(self, ch, method, properties, body):
-
-        print("VOY A PROCESAR UN MENSAJE NUEVO EN ACCEPTER SIUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUU")
-
         response = json.loads(body)
         if response == None:
             self.received_eofs += 1
@@ -72,7 +69,6 @@ def send_json(skt: socket, data):
     send_string(skt, json.dumps(data))
 
 def handle_connection(connections_queue: mp.Queue, categories):
-    print("Soy un subproceso")
     middleware = MOM(f"{cluster_type}_sender", None)
     read_socket = connections_queue.get()
     while read_socket != None:
