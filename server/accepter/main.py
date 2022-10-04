@@ -121,6 +121,7 @@ def handle_connection(connections_queue: mp.Queue, categories):
                     for index in kept_attributes:
                         sent_line.append(line[index])
                     middleware.send(sent_line)
+                    # middleware.send(line)
         # BORRAR
         print(f"Read lines: {read_lines}")
 
