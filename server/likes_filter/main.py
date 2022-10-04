@@ -36,6 +36,8 @@ class LikesFilter:
             if self.received_eofs == self.previous_stage_size:
                 print(f"VOY A ENVIAR NONE, received eofs: {self.received_eofs}, expected eofs: {self.previous_stage_size}")
                 self.middleware.send_general(None)
+                print("BORRAR VOY A MATAR LA CONEXION")
+                self.middleware.close()
         else:
             # print(line)
             # likes_amount: str = line[general_config["indexes"]["likes"]]
@@ -46,6 +48,9 @@ class LikesFilter:
 
     def start_received_messages_processing(self):
         self.middleware.start_received_messages_processing()
+        print("BORRAR SALI DEL PROCESAMIENTO DE MENSAJES")
+        # print("BORRAR VOY A MATAR LA CONEXION")
+        # self.middleware.close()
 
 def main():
     wrapper = LikesFilter()

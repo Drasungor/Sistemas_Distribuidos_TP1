@@ -154,4 +154,6 @@ class MOM:
         self.channel.start_consuming()
 
     def close(self):
-        self.connection.close()
+        if self.connection != None:
+            self.connection.close()
+            self.connection = None
