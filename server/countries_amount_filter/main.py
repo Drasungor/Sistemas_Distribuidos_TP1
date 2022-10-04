@@ -23,15 +23,11 @@ class CountriesAmountFilter:
     def process_received_message(self, ch, method, properties, body):
         line = json.loads(body)
         if method.routing_key == general_config["general_subscription_routing_key"]:
-        # if line == None:
             self.received_eofs += 1
             if self.received_eofs == self.previous_stage_size:
                 self.middleware.send_general(None)
                 self.middleware.close()
         else:
-            # print(f"Recibi linea {line}")
-            # video_id = line[general_config["indexes"]["video_id"]]
-            # country = line[general_config["indexes"]["country"]]
             video_id = line[local_config["indexes"]["video_id"]]
             country = line[local_config["indexes"]["country"]]
             if not (video_id in self.videos_countries):
@@ -39,7 +35,6 @@ class CountriesAmountFilter:
             video_set = self.videos_countries[video_id]
             previous_countries_amount = len(video_set)
             video_set.add(country)
-            # print(video_set)
             current_countries_amount = len(video_set)
             if (current_countries_amount == self.countries_amount) and (previous_countries_amount != current_countries_amount):
                 print(f"Envio linea gracias al pais {line}")
