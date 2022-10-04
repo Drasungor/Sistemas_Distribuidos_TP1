@@ -19,15 +19,11 @@ class Accepter():
     def __init__(self, skt: socket):
         self.socket = skt
         self.middleware: MOM = MOM(cluster_type, self.process_received_message)
-        # self.middleware = None
         self.received_eofs = 0
 
         self.previous_stage_size = 0
         for previous_stage in local_config["receives_from"]:
             self.previous_stage_size += config[previous_stage]["computers_amount"]
-
-    # def add_middleware(self, middleware: MOM):
-    #     self.middleware = middleware
 
     def send_general(self, message):
         self.middleware.send_general(message)
@@ -49,8 +45,6 @@ class Accepter():
                 self.middleware.close()
         else:
             sender = response["type"]
-            # print("Response: ")
-            # print(response)
             if sender == "duplication_filter":
                 received_tuple = response["tuple"]
                 send_json(self.socket, { "type": "first_query", "value": received_tuple, "finished": False })
@@ -77,7 +71,6 @@ def send_string(skt: socket, data: str):
 def send_json(skt: socket, data):
     send_string(skt, json.dumps(data))
 
-# def handle_connection(connections_queue: mp.Queue, middleware: MOM):
 def handle_connection(connections_queue: mp.Queue, categories):
     print("Soy un subproceso")
     middleware = MOM(f"{cluster_type}_sender", None)
@@ -85,17 +78,8 @@ def handle_connection(connections_queue: mp.Queue, categories):
     while read_socket != None:
         should_keep_iterating = True
 
-        # BORRAR
-        read_lines = 0
-
         while should_keep_iterating:
-            # dict = { "data": json.dumps(data), "file_finished": file_finished }
             read_data = read_json(read_socket)
-        
-            # print("{read_data}")
-
-            # BORRAR
-            read_lines += len(read_data["data"])
             batch_country_prefix = read_data["country"]
             current_country_categories = categories[batch_country_prefix]
             should_keep_iterating = not read_data["file_finished"]
@@ -103,13 +87,6 @@ def handle_connection(connections_queue: mp.Queue, categories):
                 should_keep_iterating = read_json(read_socket)
             if len(read_data["data"]) != 0:
                 for line in read_data["data"]:
-
-                    # category_id = str(current_line[config["category_id_index"]])
-                    # if category_id in categories:
-                    #     current_line.append(categories[category_id])
-                    # else:
-                    #     current_line.append(None)
-                    # indexes = general_config["indexes"]
                     indexes = local_config["indexes"]
                     category_index = indexes["category"]
                     category_id = str(line[category_index])
@@ -118,19 +95,7 @@ def handle_connection(connections_queue: mp.Queue, categories):
                     else:
                         line[category_index] = None
                     line.append(batch_country_prefix)
-                    # kept_attributes = local_config["kept_columns"]
-                    # kept_attributes = list(map(lambda column: indexes[column], kept_attributes))
-                    # kept_attributes.sort()
-                    # sent_line = [] # ["video_id", "title", "trending_date", "tags", "views", "likes", "category_name", "country"]
-                    # for index in kept_attributes:
-                    #     sent_line.append(line[index])
-                    # middleware.send(sent_line)
-
                     middleware.send_line(line)
-
-                    # middleware.send(line)
-        # BORRAR
-        print(f"Read lines: {read_lines}")
 
         read_socket = connections_queue.get()
     middleware.send_general(None)
@@ -161,31 +126,16 @@ def main():
     first_connection, _ = server_socket.accept()
 
     connections_data = read_json(first_connection)
-    print("VOY A IMPRIMIR DATA DE CONEXIONES")
-    print(connections_data)
+
     categories = connections_data["categories"]
-
-
-    # accepter_object = Accepter(first_connection)
-    # middleware = MOM(cluster_type, accepter_object.process_received_message)
-    # accepter_object.add_middleware(middleware)
-
     incoming_connections = connections_data["connections_amount"]
-
-    # print(f"BORRAR cantidad conexiones: {incoming_connections}")
-
     incoming_files_amount = connections_data["files_amount"]
-    # processes_amount = min([local_config["processes_amount"], mp.cpu_count(), incoming_connections])
-    
     processes_amount = local_config["processes_amount"]
-    # processes_amount = 1
 
     accepter_object = Accepter(first_connection)
-    # accepter_object.send_general(processes_amount) # So that the other clusters know for how many Nones they have to listen to
 
     child_processes: "list[mp.Queue]" = []
     for _ in range(processes_amount):
-        # new_process = mp.Process( target = handle_connection, args = [accepter_queue, middleware])
         new_process = mp.Process( target = handle_connection, args = [accepter_queue, categories])
         child_processes.append(new_process)
         new_process.start()
@@ -196,7 +146,6 @@ def main():
     for _ in range(len(child_processes)):
         accepter_queue.put(None)
 
-    # start receiving MOM messages
     accepter_object.start_received_messages_processing()
 
     accepter_queue.close()
