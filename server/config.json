@@ -78,7 +78,8 @@
             "tags": 4,
             "views": 5,
             "likes": 6,
-            "country": 7
+            "thumbnail_link": 7,
+            "country": 8
         },
         "kept_columns": ["video_id", "title", "category", "trending_date", "tags", "views"]
     },
@@ -137,17 +138,29 @@
             "tags": 4,
             "views": 5,
             "likes": 6,
-            "country": 7
-        }
+            "thumbnail_link": 7,
+            "country": 8
+        },
+        "kept_columns": ["video_id", "thumbnail_link", "country"]
     },
     "countries_amount_filter": {
         "computers_amount": 1,
         "receives_from": "trending_days_filter",
-        "hashed_by": ["video_id"]
+        "hashed_by": ["video_id"],
+        "indexes": {
+            "video_id": 0,
+            "thumbnail_link": 1,
+            "country": 2
+        },
+        "kept_columns": ["video_id", "thumbnail_link"]
     },
     "thumbnails_downloader": {
         "computers_amount": 1,
         "receives_from": "countries_amount_filter",
-        "hashed_by": ["video_id"]
+        "hashed_by": ["video_id"],
+        "indexes": {
+            "video_id": 0,
+            "thumbnail_link": 1
+        }
     }
 }
