@@ -150,6 +150,11 @@ def receive_query_response(skt: socket):
 
 
 def main():
+    logging.basicConfig(
+        format='%(asctime)s %(levelname)-8s %(message)s',
+        level="DEBUG",
+        datefmt='%Y-%m-%d %H:%M:%S',
+    )
     files_paths = config["files_names"]
 
     # Total amount of processes the client is composed of

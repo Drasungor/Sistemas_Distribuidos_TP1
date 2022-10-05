@@ -25,7 +25,7 @@ class Accepter():
 
         self.received_sigterm = False
         self.has_to_close = False
-        self.is_processing_message = False
+        # self.is_processing_message = False
 
         self.previous_stage_size = 0
         for previous_stage in local_config["receives_from"]:
@@ -41,7 +41,7 @@ class Accepter():
         return self.received_sigterm
 
     def process_received_message(self, ch, method, properties, body):
-        self.is_processing_message = True
+        # self.is_processing_message = True
         response = json.loads(body)
         if response == None:
             self.received_eofs += 1
@@ -66,16 +66,17 @@ class Accepter():
         if self.has_to_close:
             self.middleware.close()
             logging.info("Closed MOM")
-        self.is_processing_message = False
+        # self.is_processing_message = False
 
 
     def __handle_signal(self, *args): # To prevent double closing 
+        self.has_to_close = True
         self.received_sigterm = True
-        if self.is_processing_message:
-            self.has_to_close = True
-        else:
-            self.middleware.close()
-            logging.info("Closed MOM")
+        # if self.is_processing_message:
+        #     self.has_to_close = True
+        # else:
+        #     self.middleware.close()
+        #     logging.info("Closed MOM")
 
 
 def read_json(skt: socket):
@@ -146,6 +147,11 @@ def __read_string(skt: socket):
 
 
 def main():
+    logging.basicConfig(
+        format='%(asctime)s %(levelname)-8s %(message)s',
+        level="DEBUG",
+        datefmt='%Y-%m-%d %H:%M:%S',
+    )
     accepter_queue = mp.Queue()
 
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -181,7 +187,7 @@ def main():
 
     first_connection.close()
     logging.info("Closed accepter socket")
-    
+
     if received_sigterm:
         for process in child_processes:
             process.terminate()

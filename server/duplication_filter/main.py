@@ -27,7 +27,7 @@ class DuplicationFilter:
         signal.signal(signal.SIGTERM, self.__handle_signal)
 
     def process_received_message(self, ch, method, properties, body):
-        self.is_processing_message = True
+        # self.is_processing_message = True
         line = json.loads(body)
 
         if method.routing_key == general_config["general_subscription_routing_key"]:
@@ -47,20 +47,26 @@ class DuplicationFilter:
         if self.has_to_close:
             self.middleware.close()
             logging.info("Closed MOM")
-        self.is_processing_message = False    
+        # self.is_processing_message = False    
 
     def start_received_messages_processing(self):
         self.middleware.start_received_messages_processing()
 
     def __handle_signal(self, *args): # To prevent double closing 
-        if self.is_processing_message:
-            self.has_to_close = True
-        else:
-            self.middleware.close()
-            logging.info("Closed MOM")
+        self.has_to_close = True
+        # if self.is_processing_message:
+        #     self.has_to_close = True
+        # else:
+        #     self.middleware.close()
+        #     logging.info("Closed MOM")
 
 
 def main():
+    logging.basicConfig(
+        format='%(asctime)s %(levelname)-8s %(message)s',
+        level="DEBUG",
+        datefmt='%Y-%m-%d %H:%M:%S',
+    )
     wrapper = DuplicationFilter()
     wrapper.start_received_messages_processing()
 

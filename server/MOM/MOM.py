@@ -16,6 +16,7 @@ class MOM:
         self.receiver = None # exchange | queue
         self.sender = None # [(exchange name, [hashing attributes], connections_amount)] | [queue name]
         self.connection_mode = None
+        self.queue_tag = None
         connections = local_config["connections"]
         connections_names = list(connections.keys())
         connections_names.append("accepter_sender")
@@ -72,11 +73,11 @@ class MOM:
                 queue_name = result.method.queue
                 self.channel.queue_bind(exchange = self.receiver, queue = queue_name, routing_key = os.environ["NODE_ID"])
                 self.channel.queue_bind(exchange = self.receiver, queue = queue_name, routing_key = general_config["general_subscription_routing_key"])
-                self.channel.basic_consume(queue = queue_name, on_message_callback=receiver_callback, auto_ack=True)
+                self.queue_tag = self.channel.basic_consume(queue = queue_name, on_message_callback=receiver_callback, auto_ack=True)
             else:
                 self.receiver = connection_mode
                 self.channel.queue_declare(queue = connection_mode)
-                self.channel.basic_consume(queue = connection_mode, on_message_callback=receiver_callback, auto_ack=True)
+                self.queue_tag = self.channel.basic_consume(queue = connection_mode, on_message_callback=receiver_callback, auto_ack=True)
 
         if self.sends_to_publisher:
             self.sender = []
@@ -137,5 +138,6 @@ class MOM:
 
     def close(self):
         if self.connection != None:
+            self.channel.basic_cancel(self.queue_tag)
             self.connection.close()
             self.connection = None
