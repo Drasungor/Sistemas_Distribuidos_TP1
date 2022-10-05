@@ -3,6 +3,7 @@ import multiprocessing as mp
 import json
 from MOM import MOM
 import signal
+import logging
 
 cluster_type = "accepter"
 
@@ -22,25 +23,32 @@ class Accepter():
         self.middleware: MOM = MOM(cluster_type, self.process_received_message)
         self.received_eofs = 0
 
+        self.received_sigterm = False
+        self.has_to_close = False
+        self.is_processing_message = False
+
         self.previous_stage_size = 0
         for previous_stage in local_config["receives_from"]:
             self.previous_stage_size += config[previous_stage]["computers_amount"]
 
-        # signal.signal(signal.SIGTERM, self.close_connection)
+        signal.signal(signal.SIGTERM, self.__handle_signal)
 
     def send_general(self, message):
         self.middleware.send_general(message)
 
     def start_received_messages_processing(self):
         self.middleware.start_received_messages_processing()
+        return self.received_sigterm
 
     def process_received_message(self, ch, method, properties, body):
+        self.is_processing_message = True
         response = json.loads(body)
         if response == None:
             self.received_eofs += 1
             if self.received_eofs == self.previous_stage_size:
                 send_json(self.socket, { "finished": True })
-                self.middleware.close()
+                self.has_to_close = True
+                # self.middleware.close()
         else:
             sender = response["type"]
             if sender == "duplication_filter":
@@ -55,6 +63,19 @@ class Accepter():
             else:
                 raise ValueError(f"Unexpected sender: {sender}")
 
+        if self.has_to_close:
+            self.middleware.close()
+            logging.info("Closed MOM")
+        self.is_processing_message = False
+
+
+    def __handle_signal(self, *args): # To prevent double closing 
+        self.received_sigterm = True
+        if self.is_processing_message:
+            self.has_to_close = True
+        else:
+            self.middleware.close()
+            logging.info("Closed MOM")
 
 
 def read_json(skt: socket):
@@ -69,13 +90,23 @@ def send_string(skt: socket, data: str):
 def send_json(skt: socket, data):
     send_string(skt, json.dumps(data))
 
+class SigtermNotifier:
+    def __init__(self):
+        self.received_sigterm = False
+        signal.signal(signal.SIGTERM, self.__handle_sigterm)
+
+    def __handle_sigterm(self, *args):
+        self.received_sigterm = True
+
 def handle_connection(connections_queue: mp.Queue, categories):
     middleware = MOM(f"{cluster_type}_sender", None)
     read_socket = connections_queue.get()
-    while read_socket != None:
+    sigterm_notifier = SigtermNotifier()
+
+    while (read_socket != None) and (not sigterm_notifier.received_sigterm) :
         should_keep_iterating = True
 
-        while should_keep_iterating:
+        while should_keep_iterating and (not sigterm_notifier.received_sigterm):
             read_data = read_json(read_socket)
             batch_country_prefix = read_data["country"]
             current_country_categories = categories[batch_country_prefix]
@@ -93,9 +124,12 @@ def handle_connection(connections_queue: mp.Queue, categories):
                         line[category_index] = None
                     line.append(batch_country_prefix)
                     middleware.send_line(line)
-
-        read_socket = connections_queue.get()
+        read_socket.close()
+        if not sigterm_notifier.received_sigterm:
+            read_socket = connections_queue.get()
     middleware.send_general(None)
+    middleware.close()
+    logging.info("Closed subprocess MOM")
 
 def __recv_all(skt: socket, bytes_amount: int):
 		total_received_bytes = b''
@@ -143,12 +177,21 @@ def main():
     for _ in range(len(child_processes)):
         accepter_queue.put(None)
 
-    accepter_object.start_received_messages_processing()
+    first_connection.close()
+    logging.info("Closed accepter socket")
+
+    received_sigterm = accepter_object.start_received_messages_processing()
+
+    if received_sigterm:
+        for process in child_processes:
+            process.terminate()
 
     accepter_queue.close()
     accepter_queue.join_thread()
+    logging.info("Closed processes queue")
     for i in range(len(child_processes)):
         child_processes[i].join()
+    logging.info("Closed processes queue")
 
 if __name__ == "__main__":
     main()
