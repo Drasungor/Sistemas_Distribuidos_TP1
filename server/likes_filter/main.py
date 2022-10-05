@@ -40,16 +40,18 @@ class LikesFilter:
                     self.middleware.send_general(None)
                     # self.middleware.close()
                     self.has_to_close = True
-                else:
-                    self.middleware.send_general(line)
+            else:
+                self.middleware.send_general(line)
         else:
             likes_amount: str = line[local_config["indexes"]["likes"]]
             if int(likes_amount) >= local_config["likes_min"]:
                 self.middleware.send_line(line)
 
         if self.has_to_close:
+            print("BOORRAR VOY A CERRAR MOM")
             logging.info("BOORRAR VOY A CERRAR MOM")
             self.middleware.close()
+            print("Closed MOM")
             logging.info("Closed MOM")
         # self.is_processing_message = False
 

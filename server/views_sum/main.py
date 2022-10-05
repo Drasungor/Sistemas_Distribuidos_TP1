@@ -30,12 +30,13 @@ class ViewsSum:
         # self.is_processing_message = True
         line = json.loads(body)
         if method.routing_key == general_config["general_subscription_routing_key"]:
-            self.received_eofs += 1
-            if self.received_eofs == self.previous_stage_size:
-                self.middleware.send_general(self.aggregation_dict)
-                self.middleware.send_general(None)
-                # self.middleware.close()
-                self.has_to_close = True
+            if line == None:
+                self.received_eofs += 1
+                if self.received_eofs == self.previous_stage_size:
+                    self.middleware.send_general(self.aggregation_dict)
+                    self.middleware.send_general(None)
+                    # self.middleware.close()
+                    self.has_to_close = True
         else:
             date: str = line[local_config["indexes"]["trending_date"]]
             view_count: int = int(line[local_config["indexes"]["views"]])
