@@ -62,11 +62,11 @@ class ViewsSum:
 
 
 def main():
-    logging.basicConfig(
-        format='%(asctime)s %(levelname)-8s %(message)s',
-        level="DEBUG",
-        datefmt='%Y-%m-%d %H:%M:%S',
-    )
+    # logging.basicConfig(
+    #     format='%(asctime)s %(levelname)-8s %(message)s',
+    #     level="DEBUG",
+    #     datefmt='%Y-%m-%d %H:%M:%S',
+    # )
     wrapper = ViewsSum()
     wrapper.start_received_messages_processing()
 
