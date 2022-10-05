@@ -26,6 +26,8 @@ class Accepter():
         for previous_stage in local_config["receives_from"]:
             self.previous_stage_size += config[previous_stage]["computers_amount"]
 
+        # signal.signal(signal.SIGTERM, self.close_connection)
+
     def send_general(self, message):
         self.middleware.send_general(message)
 
@@ -36,9 +38,7 @@ class Accepter():
         response = json.loads(body)
         if response == None:
             self.received_eofs += 1
-            print("Recibi un eof")
             if self.received_eofs == self.previous_stage_size:
-                print("Envié que termine")
                 send_json(self.socket, { "finished": True })
                 self.middleware.close()
         else:
