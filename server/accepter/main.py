@@ -176,11 +176,12 @@ def main():
     for _ in range(len(child_processes)):
         accepter_queue.put(None)
 
-    first_connection.close()
-    logging.info("Closed accepter socket")
 
     received_sigterm = accepter_object.start_received_messages_processing()
 
+    first_connection.close()
+    logging.info("Closed accepter socket")
+    
     if received_sigterm:
         for process in child_processes:
             process.terminate()

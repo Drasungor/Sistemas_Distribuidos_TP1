@@ -79,6 +79,7 @@ class SigtermNotifier:
         signal.signal(signal.SIGTERM, self.__handle_sigterm)
 
     def __handle_sigterm(self, *args):
+        logging.info("RECIBI UN SIGTERM")
         self.received_sigterm = True
 
 def send_file_data(skt: socket, files_paths, sigterm_notifier: SigtermNotifier):
@@ -117,6 +118,7 @@ def send_files_data(files_paths_queue: mp.Queue):
 
     send_string(process_socket, json.dumps(False))
     process_socket.close()
+    logging.info("Closed process socket")
 
 
 def receive_query_response(skt: socket):

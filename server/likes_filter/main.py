@@ -45,6 +45,7 @@ class LikesFilter:
                 self.middleware.send_line(line)
 
         if self.has_to_close:
+            logging.info("BOORRAR VOY A CERRAR MOM")
             self.middleware.close()
             logging.info("Closed MOM")
         self.is_processing_message = False
@@ -56,6 +57,7 @@ class LikesFilter:
         if self.is_processing_message:
             self.has_to_close = True
         else:
+            logging.info("BOORRAR VOY A CERRAR MOM")
             self.middleware.close()
             logging.info("Closed MOM")
 
