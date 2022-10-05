@@ -4,6 +4,7 @@ import multiprocessing as mp
 import json
 import base64
 import signal
+import logging
 
 class ClosedSocket(Exception):
 	pass
@@ -69,16 +70,11 @@ def get_next_line(csv_reader):
             current_line = next(csv_reader, None)
             should_keep_reading = False
         except csv.Error:
-            print("Reading error")
+            logging.info("Reading error")
     return current_line
 
 def send_file_data(skt: socket, files_paths):
-
-    print("Entre a send_file_data")
-
     batch_size = config["batch_size"]
-
-    categories = get_categories_dict(files_paths["category"])
     trending_file_path: str = files_paths["trending"]
     country_prefix = trending_file_path.split("/")[2][0:2]
     with open(trending_file_path) as trending_file_ptr:
@@ -87,8 +83,6 @@ def send_file_data(skt: socket, files_paths):
         lines_accumulator = []
         current_line = get_next_line(csv_reader)
         while current_line != None:
-            if len(current_line) != 16:
-                print(f"Expected length 16, got length {len(current_line)} with line {current_line}")
             lines_accumulator.append(current_line)
             if len(lines_accumulator) == batch_size:
                 send_cached_data(skt, lines_accumulator, country_prefix, False)
@@ -115,15 +109,12 @@ def send_files_data(files_paths_queue: mp.Queue):
     process_socket.close()
 
 def receive_query_response(skt: socket):
-    print("BORRAR entre a receive_query_response")
-
     finished = False
     first_query_ptr = open(config["result_files_paths"]["first_query"], "w")
     second_query_folder = config["result_files_paths"]["second_query"]
     third_query_ptr = open(config["result_files_paths"]["third_query"], "w")
     while not finished:
         received_message = json.loads(read_string(skt))
-        print(f"BORRAR Lei el mensaje {received_message}")
         finished = received_message["finished"]
         if not finished:
             query_type = received_message["type"]

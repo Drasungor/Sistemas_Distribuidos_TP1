@@ -96,7 +96,6 @@ def handle_connection(connections_queue: mp.Queue, categories):
 
         read_socket = connections_queue.get()
     middleware.send_general(None)
-    print("Envie mensaje de fin")
 
 def __recv_all(skt: socket, bytes_amount: int):
 		total_received_bytes = b''
