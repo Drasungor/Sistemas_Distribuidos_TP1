@@ -38,7 +38,8 @@ class TrendingDaysFilter:
                 self.received_eofs += 1
                 if self.received_eofs == self.previous_stage_size:
                     self.middleware.send_general(None)
-                    self.middleware.close()
+                # self.middleware.close()
+                self.has_to_close = True
             else:
                 self.middleware.send_general(message)
         else:

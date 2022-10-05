@@ -34,7 +34,8 @@ class ViewsSum:
             if self.received_eofs == self.previous_stage_size:
                 self.middleware.send_general(self.aggregation_dict)
                 self.middleware.send_general(None)
-                self.middleware.close()
+                # self.middleware.close()
+                self.has_to_close = True
         else:
             date: str = line[local_config["indexes"]["trending_date"]]
             view_count: int = int(line[local_config["indexes"]["views"]])

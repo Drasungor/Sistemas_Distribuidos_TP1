@@ -34,7 +34,8 @@ class MaxViewsDay:
             self.received_eofs += 1
             if self.received_eofs == self.previous_stage_size:
                 self.middleware.send_general(None)
-                self.middleware.close()
+                # self.middleware.close()
+                self.has_to_close = True
         else:
             line = json.loads(body)
             video_id = line[local_config["indexes"]["video_id"]]

@@ -29,6 +29,8 @@ class LikesFilter:
         signal.signal(signal.SIGTERM, self.__handle_signal)
 
     def process_received_line(self, ch, method, properties, body):
+        # logging.info("BORRAR Voy a procesar un mensaje")
+        # print("BORRAR Voy a procesar un mensaje")
         self.is_processing_message = True
         line = json.loads(body)
         if method.routing_key == general_config["general_subscription_routing_key"]:
@@ -36,7 +38,8 @@ class LikesFilter:
                 self.received_eofs += 1
                 if self.received_eofs == self.previous_stage_size:
                     self.middleware.send_general(None)
-                    self.middleware.close()
+                    # self.middleware.close()
+                    self.has_to_close = True
                 else:
                     self.middleware.send_general(line)
         else:
@@ -57,12 +60,16 @@ class LikesFilter:
         if self.is_processing_message:
             self.has_to_close = True
         else:
-            logging.info("BOORRAR VOY A CERRAR MOM")
+            # logging.info("BOORRAR VOY A CERRAR MOM")
+            print("BOORRAR VOY A CERRAR MOM")
             self.middleware.close()
-            logging.info("Closed MOM")
+            # logging.info("Closed MOM")
+            print("Closed MOM")
 
 
 def main():
+    # print("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
+    # logging.debug("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
     wrapper = LikesFilter()
     wrapper.start_received_messages_processing()
 

@@ -35,7 +35,8 @@ class MaxViewsDay:
                 final_message_dict = { "type": cluster_type, "max_day": self.max_views_date }
                 self.middleware.send(final_message_dict)
                 self.middleware.send_general(None)
-                self.middleware.close()
+                # self.middleware.close()
+                self.has_to_close = True
         else:
             daily_views_dict = received_message
             for day in daily_views_dict:
