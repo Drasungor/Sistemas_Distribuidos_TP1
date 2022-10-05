@@ -103,7 +103,7 @@ def handle_connection(connections_queue: mp.Queue, categories):
     read_socket = connections_queue.get()
     sigterm_notifier = SigtermNotifier()
 
-    while (read_socket != None) and (not sigterm_notifier.received_sigterm) :
+    while read_socket != None :
         should_keep_iterating = True
 
         while should_keep_iterating and (not sigterm_notifier.received_sigterm):
@@ -125,8 +125,7 @@ def handle_connection(connections_queue: mp.Queue, categories):
                     line.append(batch_country_prefix)
                     middleware.send_line(line)
         read_socket.close()
-        if not sigterm_notifier.received_sigterm:
-            read_socket = connections_queue.get()
+        read_socket = connections_queue.get()
     middleware.send_general(None)
     middleware.close()
     logging.info("Closed subprocess MOM")
@@ -191,7 +190,7 @@ def main():
     logging.info("Closed processes queue")
     for i in range(len(child_processes)):
         child_processes[i].join()
-    logging.info("Closed processes queue")
+    logging.info("Joined child processes")
 
 if __name__ == "__main__":
     main()

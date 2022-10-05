@@ -73,7 +73,15 @@ def get_next_line(csv_reader):
             logging.info("Reading error")
     return current_line
 
-def send_file_data(skt: socket, files_paths):
+class SigtermNotifier:
+    def __init__(self):
+        self.received_sigterm = False
+        signal.signal(signal.SIGTERM, self.__handle_sigterm)
+
+    def __handle_sigterm(self, *args):
+        self.received_sigterm = True
+
+def send_file_data(skt: socket, files_paths, sigterm_notifier: SigtermNotifier):
     batch_size = config["batch_size"]
     trending_file_path: str = files_paths["trending"]
     country_prefix = trending_file_path.split("/")[2][0:2]
@@ -82,7 +90,7 @@ def send_file_data(skt: socket, files_paths):
         next(csv_reader) #Discards header
         lines_accumulator = []
         current_line = get_next_line(csv_reader)
-        while current_line != None:
+        while (current_line != None) and (not sigterm_notifier.received_sigterm):
             lines_accumulator.append(current_line)
             if len(lines_accumulator) == batch_size:
                 send_cached_data(skt, lines_accumulator, country_prefix, False)
@@ -91,6 +99,7 @@ def send_file_data(skt: socket, files_paths):
         send_cached_data(skt, lines_accumulator, country_prefix, True)
 
 def send_files_data(files_paths_queue: mp.Queue):
+    sigterm_notifier = SigtermNotifier()
     connection_address = config["accepter_address"]
     connection_port = config["accepter_port"]
     process_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -99,21 +108,24 @@ def send_files_data(files_paths_queue: mp.Queue):
     read_message = files_paths_queue.get()
     should_keep_iterating = read_message != None
     while should_keep_iterating:
-        send_file_data(process_socket, read_message)
+        if not sigterm_notifier.received_sigterm:
+            send_file_data(process_socket, read_message, sigterm_notifier)
         read_message = files_paths_queue.get()
         should_keep_iterating = read_message != None
-        if should_keep_iterating:
+        if should_keep_iterating and (not sigterm_notifier.received_sigterm):
             send_string(process_socket, json.dumps(True))
 
     send_string(process_socket, json.dumps(False))
     process_socket.close()
 
+
 def receive_query_response(skt: socket):
+    sigterm_notifier = SigtermNotifier()
     finished = False
     first_query_ptr = open(config["result_files_paths"]["first_query"], "w")
     second_query_folder = config["result_files_paths"]["second_query"]
     third_query_ptr = open(config["result_files_paths"]["third_query"], "w")
-    while not finished:
+    while (not finished) and (not sigterm_notifier.received_sigterm):
         received_message = json.loads(read_string(skt))
         finished = received_message["finished"]
         if not finished:
@@ -132,6 +144,7 @@ def receive_query_response(skt: socket):
                     third_query_ptr.write(f"{value}\n")
     first_query_ptr.close()
     third_query_ptr.close()
+    return sigterm_notifier.received_sigterm
 
 
 def main():
@@ -153,7 +166,6 @@ def main():
     for _ in range(processes_amount):
         child_processes.append(mp.Process( target = send_files_data, args = [files_paths_queue]))
 
-
     for process in child_processes:
         process.start()
     
@@ -163,11 +175,20 @@ def main():
         files_paths_queue.put(None)
     files_paths_queue.close()
 
-    receive_query_response(main_process_connection_socket)
+    received_sigterm = receive_query_response(main_process_connection_socket)
+
+    main_process_connection_socket.close()
+    logging.info("Closed main process socket")
+
+    if received_sigterm:
+        for process in child_processes:
+            process.terminate()
 
     files_paths_queue.join_thread()
+    logging.info("Closed processes queue")
     for process in child_processes:
         process.join()
+    logging.info("Joined child processes")
 
 if __name__ == "__main__":
     main()
