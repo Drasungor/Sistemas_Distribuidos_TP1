@@ -1,5 +1,6 @@
 import json
 from MOM import MOM
+import signal
 
 cluster_type = "max_views_day"
 

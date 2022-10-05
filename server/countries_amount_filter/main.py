@@ -1,5 +1,6 @@
 import json
 from MOM import MOM
+import signal
 
 cluster_type = "countries_amount_filter"
 
@@ -30,7 +31,6 @@ class CountriesAmountFilter:
                     self.middleware.close()
             else:
                 self.countries_amount = line # Number
-                print(f"Countries amount: {self.countries_amount}")
         else:
             video_id = line[local_config["indexes"]["video_id"]]
             country = line[local_config["indexes"]["country"]]

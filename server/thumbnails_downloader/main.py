@@ -2,6 +2,7 @@ import json
 from MOM import MOM
 import requests
 import base64
+import signal
 
 cluster_type = "thumbnails_downloader"
 
