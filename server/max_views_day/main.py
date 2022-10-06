@@ -19,7 +19,6 @@ class MaxViewsDay:
         self.received_eofs = 0
 
         self.has_to_close = False
-        # self.is_processing_message = False
 
         previous_stage = local_config["receives_from"]
         self.previous_stage_size = config[previous_stage]["computers_amount"]
@@ -27,7 +26,6 @@ class MaxViewsDay:
         signal.signal(signal.SIGTERM, self.__handle_signal)
 
     def process_received_message(self, ch, method, properties, body):
-        # self.is_processing_message = True
         received_message = json.loads(body)
         if received_message == None:
             self.received_eofs += 1
@@ -35,34 +33,22 @@ class MaxViewsDay:
                 final_message_dict = { "type": cluster_type, "max_day": self.max_views_date }
                 self.middleware.send(final_message_dict)
                 self.middleware.send_general(None)
-                # self.middleware.close()
                 self.has_to_close = True
         else:
             daily_views_dict = received_message
-            # print(f"BORRAR Recibi un diccionario para procesar: {daily_views_dict}")
             for day in daily_views_dict:
                 if daily_views_dict[day] > self.max_views_date[1]:
                     self.max_views_date = (day, daily_views_dict[day])
 
-            print(f"BORRAR Maximo post procesamiento: {self.max_views_date}")
-
-
         if self.has_to_close:
             self.middleware.close()
             logging.info("Closed MOM")
-        # self.is_processing_message = False
 
     def start_received_messages_processing(self):
         self.middleware.start_received_messages_processing()
 
     def __handle_signal(self, *args): # To prevent double closing 
         self.has_to_close = True
-        # if self.is_processing_message:
-        #     self.has_to_close = True
-        # else:
-        #     self.middleware.close()
-        #     logging.info("Closed MOM")
-
 
 def main():
     # logging.basicConfig(
