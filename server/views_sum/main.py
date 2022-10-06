@@ -32,7 +32,7 @@ class ViewsSum:
                 self.received_eofs += 1
                 if self.received_eofs == self.previous_stage_size:
                     self.middleware.send_general(self.aggregation_dict)
-                    self.middleware.send_general(None)
+                    # self.middleware.send_general(None)
                     self.has_to_close = True
         else:
             date: str = line[local_config["indexes"]["trending_date"]]
@@ -43,6 +43,8 @@ class ViewsSum:
                 self.aggregation_dict[date] += view_count
 
         if self.has_to_close:
+            print("BORRAR, ENVIE MENSAJE DE CERRADO")
+            self.middleware.send_general(None)
             self.middleware.close()
             logging.info("Closed MOM")
 

@@ -31,7 +31,7 @@ class MaxViewsDay:
         if method.routing_key == general_config["general_subscription_routing_key"]:
             self.received_eofs += 1
             if self.received_eofs == self.previous_stage_size:
-                self.middleware.send_general(None)
+                # self.middleware.send_general(None)
                 self.has_to_close = True
         else:
             line = json.loads(body)
@@ -41,6 +41,7 @@ class MaxViewsDay:
             self.middleware.send({ "type": cluster_type, "img_data": (video_id, base64.b64encode(img_data).decode()) })
 
         if self.has_to_close:
+            self.middleware.send_general(None)
             self.middleware.close()
             logging.info("Closed MOM")
 

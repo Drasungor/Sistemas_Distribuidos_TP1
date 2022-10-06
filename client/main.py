@@ -74,13 +74,17 @@ def get_next_line(csv_reader):
     return current_line
 
 class SigtermNotifier:
-    def __init__(self):
+    def __init__(self, processes = None):
         self.received_sigterm = False
+        self.processes = processes
         signal.signal(signal.SIGTERM, self.__handle_sigterm)
 
     def __handle_sigterm(self, *args):
         logging.info("RECIBI UN SIGTERM")
         self.received_sigterm = True
+        if self.processes != None:
+            for process in self.processes:
+                process.terminate()
 
 def send_file_data(skt: socket, files_paths, sigterm_notifier: SigtermNotifier):
     batch_size = config["batch_size"]
@@ -121,8 +125,8 @@ def send_files_data(files_paths_queue: mp.Queue):
     logging.info("Closed process socket")
 
 
-def receive_query_response(skt: socket):
-    sigterm_notifier = SigtermNotifier()
+def receive_query_response(skt: socket, child_processes):
+    sigterm_notifier = SigtermNotifier(child_processes)
     finished = False
     first_query_ptr = open(config["result_files_paths"]["first_query"], "w")
     second_query_folder = config["result_files_paths"]["second_query"]
@@ -131,7 +135,7 @@ def receive_query_response(skt: socket):
         received_message = json.loads(read_string(skt))
         finished = received_message["finished"]
         if not finished:
-            # print(f"Received message: {received_message}")
+            print(f"Received message: {received_message}")
             query_type = received_message["type"]
             value = received_message["value"]
             if not finished:
@@ -183,14 +187,17 @@ def main():
         files_paths_queue.put(None)
     files_paths_queue.close()
 
-    received_sigterm = receive_query_response(main_process_connection_socket)
+    # received_sigterm = receive_query_response(main_process_connection_socket)
+    received_sigterm = receive_query_response(main_process_connection_socket, child_processes)
 
+    # if not received_sigterm:
+    #     main_process_connection_socket.close()
     main_process_connection_socket.close()
     logging.info("Closed main process socket")
 
-    if received_sigterm:
-        for process in child_processes:
-            process.terminate()
+    # if received_sigterm:
+    #     for process in child_processes:
+    #         process.terminate()
 
     files_paths_queue.join_thread()
     logging.info("Closed processes queue")

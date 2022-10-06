@@ -34,7 +34,7 @@ class LikesFilter:
                 self.received_eofs += 1
                 print("BORRAR recibi none")
                 if self.received_eofs == self.previous_stage_size:
-                    self.middleware.send_general(None)
+                    # self.middleware.send_general(None)
                     self.has_to_close = True
             else:
                 self.middleware.send_general(line)
@@ -46,6 +46,7 @@ class LikesFilter:
         if self.has_to_close:
             print("BOORRAR VOY A CERRAR MOM")
             logging.info("BOORRAR VOY A CERRAR MOM")
+            self.middleware.send_general(None)
             self.middleware.close()
             print("Closed MOM")
             logging.info("Closed MOM")
@@ -54,6 +55,7 @@ class LikesFilter:
         self.middleware.start_received_messages_processing()
 
     def __handle_signal(self, *args): # To prevent double closing 
+        # self.middleware.send_general(None)
         self.has_to_close = True
 
 def main():

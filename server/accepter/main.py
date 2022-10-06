@@ -18,12 +18,13 @@ class ClosedSocket(Exception):
 	pass
 
 class Accepter():
-    def __init__(self, skt: socket):
+    def __init__(self, skt: socket, child_processes):
         self.socket = skt
         self.middleware: MOM = MOM(cluster_type, self.process_received_message)
         self.received_eofs = 0
+        self.child_processes = child_processes
 
-        self.received_sigterm = False
+        # self.received_sigterm = False
         self.has_to_close = False
         # self.is_processing_message = False
 
@@ -38,7 +39,7 @@ class Accepter():
 
     def start_received_messages_processing(self):
         self.middleware.start_received_messages_processing()
-        return self.received_sigterm
+        # return self.received_sigterm
 
     def process_received_message(self, ch, method, properties, body):
         # self.is_processing_message = True
@@ -71,7 +72,12 @@ class Accepter():
 
     def __handle_signal(self, *args): # To prevent double closing 
         self.has_to_close = True
-        self.received_sigterm = True
+        # self.received_sigterm = True
+
+        for process in self.child_processes:
+            print("BORRAR, envie mensaje de terminate")
+            process.terminate()
+
         # if self.is_processing_message:
         #     self.has_to_close = True
         # else:
@@ -127,6 +133,8 @@ def handle_connection(connections_queue: mp.Queue, categories):
                     middleware.send_line(line)
         read_socket.close()
         read_socket = connections_queue.get()
+        print(f"Lei algo de la cola: {read_socket}")
+    print("Envie none")
     middleware.send_general(None)
     middleware.close()
     logging.info("Closed subprocess MOM")
@@ -167,14 +175,23 @@ def main():
     incoming_files_amount = connections_data["files_amount"]
     processes_amount = local_config["processes_amount"]
 
-    accepter_object = Accepter(first_connection)
-    accepter_object.send_general(incoming_files_amount) # Send the amount of countries
 
     child_processes: "list[mp.Queue]" = []
     for _ in range(processes_amount):
         new_process = mp.Process( target = handle_connection, args = [accepter_queue, categories])
         child_processes.append(new_process)
-        new_process.start()
+
+    accepter_object = Accepter(first_connection, child_processes)
+    accepter_object.send_general(incoming_files_amount) # Send the amount of countries
+
+    # child_processes: "list[mp.Queue]" = []
+    # for _ in range(processes_amount):
+    #     new_process = mp.Process( target = handle_connection, args = [accepter_queue, categories])
+    #     child_processes.append(new_process)
+    #     new_process.start()
+    for process in child_processes:
+        process.start()
+
     for _ in range(incoming_connections):
         accepted_socket, _ = server_socket.accept()
         accepter_queue.put(accepted_socket)
@@ -183,14 +200,11 @@ def main():
         accepter_queue.put(None)
 
 
-    received_sigterm = accepter_object.start_received_messages_processing()
+    # received_sigterm = accepter_object.start_received_messages_processing()
+    accepter_object.start_received_messages_processing()
 
     first_connection.close()
     logging.info("Closed accepter socket")
-
-    if received_sigterm:
-        for process in child_processes:
-            process.terminate()
 
     accepter_queue.close()
     accepter_queue.join_thread()

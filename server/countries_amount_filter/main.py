@@ -32,7 +32,7 @@ class CountriesAmountFilter:
             if line == None:
                 self.received_eofs += 1
                 if self.received_eofs == self.previous_stage_size:
-                    self.middleware.send_general(None)
+                    # self.middleware.send_general(None)
                     self.has_to_close = True
             else:
                 self.countries_amount = line # Number
@@ -49,6 +49,7 @@ class CountriesAmountFilter:
                 self.middleware.send(line)
 
         if self.has_to_close:
+            self.middleware.send_general(None)
             self.middleware.close()
             logging.info("Closed MOM")
 

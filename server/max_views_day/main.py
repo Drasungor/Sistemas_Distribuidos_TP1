@@ -32,7 +32,7 @@ class MaxViewsDay:
             if self.received_eofs == self.previous_stage_size:
                 final_message_dict = { "type": cluster_type, "max_day": self.max_views_date }
                 self.middleware.send(final_message_dict)
-                self.middleware.send_general(None)
+                # self.middleware.send_general(None)
                 self.has_to_close = True
         else:
             daily_views_dict = received_message
@@ -41,6 +41,7 @@ class MaxViewsDay:
                     self.max_views_date = (day, daily_views_dict[day])
 
         if self.has_to_close:
+            self.middleware.send_general(None)
             self.middleware.close()
             logging.info("Closed MOM")
 
