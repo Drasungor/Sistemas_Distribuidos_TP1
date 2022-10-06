@@ -2,3 +2,7 @@ client/data
 client/minidatasets
 client/result
 *__pycache__
+client/a.py
+client/a.txt
+client/b.txt
+out.txt
