@@ -23,10 +23,7 @@ class Accepter():
         self.middleware: MOM = MOM(cluster_type, self.process_received_message)
         self.received_eofs = 0
         self.child_processes = child_processes
-
-        # self.received_sigterm = False
         self.has_to_close = False
-        # self.is_processing_message = False
 
         self.previous_stage_size = 0
         for previous_stage in local_config["receives_from"]:
@@ -39,17 +36,14 @@ class Accepter():
 
     def start_received_messages_processing(self):
         self.middleware.start_received_messages_processing()
-        # return self.received_sigterm
 
     def process_received_message(self, ch, method, properties, body):
-        # self.is_processing_message = True
         response = json.loads(body)
         if response == None:
             self.received_eofs += 1
             if self.received_eofs == self.previous_stage_size:
                 send_json(self.socket, { "finished": True })
                 self.has_to_close = True
-                # self.middleware.close()
         else:
             sender = response["type"]
             if sender == "duplication_filter":
@@ -67,23 +61,12 @@ class Accepter():
         if self.has_to_close:
             self.middleware.close()
             logging.info("Closed MOM")
-        # self.is_processing_message = False
-
 
     def __handle_signal(self, *args): # To prevent double closing 
         self.has_to_close = True
-        # self.received_sigterm = True
-
         for process in self.child_processes:
             print("BORRAR, envie mensaje de terminate")
             process.terminate()
-
-        # if self.is_processing_message:
-        #     self.has_to_close = True
-        # else:
-        #     self.middleware.close()
-        #     logging.info("Closed MOM")
-
 
 def read_json(skt: socket):
     return json.loads(__read_string(skt))
@@ -114,14 +97,8 @@ def handle_connection(connections_queue: mp.Queue, categories):
         should_keep_iterating = True
 
         while should_keep_iterating and (not sigterm_notifier.received_sigterm):
-        # while not sigterm_notifier.received_sigterm:
             read_data = read_json(read_socket)
-            # print(read_data)
             if read_data["should_continue_communication"]:
-                # print("should_continue_communication me dio true")
-                # should_keep_iterating = not read_data["file_finished"]
-                # # if not should_keep_iterating:
-                # #     should_keep_iterating = read_json(read_socket)
                 batch_country_prefix = read_data["country"]
                 current_country_categories = categories[batch_country_prefix]
                 if len(read_data["data"]) != 0:
@@ -191,11 +168,6 @@ def main():
     accepter_object = Accepter(first_connection, child_processes)
     accepter_object.send_general(incoming_files_amount) # Send the amount of countries
 
-    # child_processes: "list[mp.Queue]" = []
-    # for _ in range(processes_amount):
-    #     new_process = mp.Process( target = handle_connection, args = [accepter_queue, categories])
-    #     child_processes.append(new_process)
-    #     new_process.start()
     for process in child_processes:
         process.start()
 
@@ -206,8 +178,6 @@ def main():
     for _ in range(len(child_processes)):
         accepter_queue.put(None)
 
-
-    # received_sigterm = accepter_object.start_received_messages_processing()
     accepter_object.start_received_messages_processing()
 
     first_connection.close()
