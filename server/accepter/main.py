@@ -60,7 +60,7 @@ class Accepter():
 
         if self.has_to_close:
             self.middleware.close()
-            logging.info("Closed MOM")
+            print("Closed MOM")
 
     def __handle_signal(self, *args): # To prevent double closing 
         self.has_to_close = True
@@ -117,7 +117,7 @@ def handle_connection(connections_queue: mp.Queue, categories):
         read_socket = connections_queue.get()
     middleware.send_general(None)
     middleware.close()
-    logging.info("Closed subprocess MOM")
+    print("Closed subprocess MOM")
 
 def __recv_all(skt: socket, bytes_amount: int):
 		total_received_bytes = b''
@@ -177,14 +177,14 @@ def main():
     accepter_object.start_received_messages_processing()
 
     first_connection.close()
-    logging.info("Closed accepter socket")
+    print("Closed accepter socket")
 
     accepter_queue.close()
     accepter_queue.join_thread()
-    logging.info("Closed processes queue")
+    print("Closed processes queue")
     for i in range(len(child_processes)):
         child_processes[i].join()
-    logging.info("Joined child processes")
+    print("Joined child processes")
 
 if __name__ == "__main__":
     main()

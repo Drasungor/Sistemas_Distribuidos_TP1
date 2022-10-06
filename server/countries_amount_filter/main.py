@@ -49,7 +49,7 @@ class CountriesAmountFilter:
         if self.has_to_close:
             self.middleware.send_general(None)
             self.middleware.close()
-            logging.info("Closed MOM")
+            print("Closed MOM")
 
 
     def start_received_messages_processing(self):
