@@ -50,7 +50,8 @@ def send_connection_data(skt: socket, connections_amount: int, files_paths):
 
 
 def send_cached_data(skt: socket, data, country_prefix: str, file_finished: bool):
-    dict = { "data": data, "file_finished": file_finished, "country": country_prefix }
+    # dict = { "data": data, "file_finished": file_finished, "country": country_prefix }
+    dict = { "data": data, "file_finished": file_finished, "country": country_prefix, "should_continue_communication": True }
     send_string(skt, json.dumps(dict))
 
 def get_categories_dict(json_path: str):
@@ -98,10 +99,15 @@ def send_file_data(skt: socket, files_paths, sigterm_notifier: SigtermNotifier):
         while (current_line != None) and (not sigterm_notifier.received_sigterm):
             lines_accumulator.append(current_line)
             if len(lines_accumulator) == batch_size:
+                # print("Voy a enviar un batch")
                 send_cached_data(skt, lines_accumulator, country_prefix, False)
+                # print("Envie un batch")
                 lines_accumulator = []
             current_line = get_next_line(csv_reader)
+        # print(f"Cantidad lineas: {len(lines_accumulator)}")
+        # print(f"Batch size: {batch_size}")
         send_cached_data(skt, lines_accumulator, country_prefix, True)
+        print("Envie el ultimo batch del archivo")
 
 def send_files_data(files_paths_queue: mp.Queue):
     sigterm_notifier = SigtermNotifier()
@@ -115,12 +121,16 @@ def send_files_data(files_paths_queue: mp.Queue):
     while should_keep_iterating:
         if not sigterm_notifier.received_sigterm:
             send_file_data(process_socket, read_message, sigterm_notifier)
+            print("BORRAR Envie un archivo")
         read_message = files_paths_queue.get()
         should_keep_iterating = read_message != None
-        if should_keep_iterating and (not sigterm_notifier.received_sigterm):
-            send_string(process_socket, json.dumps(True))
+        # if should_keep_iterating and (not sigterm_notifier.received_sigterm):
+        #     # send_string(process_socket, json.dumps(True))
+        #     send_string(process_socket, json.dumps({ "should_continue_communication": True }))
 
-    send_string(process_socket, json.dumps(False))
+    # send_string(process_socket, json.dumps(False))
+    print("BORRAR sali del while general del process")
+    send_string(process_socket, json.dumps({ "should_continue_communication": False }))
     process_socket.close()
     logging.info("Closed process socket")
 

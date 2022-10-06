@@ -114,23 +114,30 @@ def handle_connection(connections_queue: mp.Queue, categories):
         should_keep_iterating = True
 
         while should_keep_iterating and (not sigterm_notifier.received_sigterm):
+        # while not sigterm_notifier.received_sigterm:
             read_data = read_json(read_socket)
-            batch_country_prefix = read_data["country"]
-            current_country_categories = categories[batch_country_prefix]
-            should_keep_iterating = not read_data["file_finished"]
-            if not should_keep_iterating:
-                should_keep_iterating = read_json(read_socket)
-            if len(read_data["data"]) != 0:
-                for line in read_data["data"]:
-                    indexes = local_config["indexes"]
-                    category_index = indexes["category"]
-                    category_id = str(line[category_index])
-                    if category_id in current_country_categories:
-                        line[category_index] = current_country_categories[category_id]
-                    else:
-                        line[category_index] = None
-                    line.append(batch_country_prefix)
-                    middleware.send_line(line)
+            # print(read_data)
+            if read_data["should_continue_communication"]:
+                # print("should_continue_communication me dio true")
+                # should_keep_iterating = not read_data["file_finished"]
+                # # if not should_keep_iterating:
+                # #     should_keep_iterating = read_json(read_socket)
+                batch_country_prefix = read_data["country"]
+                current_country_categories = categories[batch_country_prefix]
+                if len(read_data["data"]) != 0:
+                    for line in read_data["data"]:
+                        indexes = local_config["indexes"]
+                        category_index = indexes["category"]
+                        category_id = str(line[category_index])
+                        if category_id in current_country_categories:
+                            line[category_index] = current_country_categories[category_id]
+                        else:
+                            line[category_index] = None
+                        line.append(batch_country_prefix)
+                        middleware.send_line(line)
+            else:
+                print("should_continue_communication me dio false")
+                should_keep_iterating = False
         read_socket.close()
         read_socket = connections_queue.get()
         print(f"Lei algo de la cola: {read_socket}")
