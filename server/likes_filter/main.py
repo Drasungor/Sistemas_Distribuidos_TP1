@@ -16,7 +16,6 @@ class LikesFilter:
     def __init__(self):
         self.middleware = MOM(cluster_type, self.process_received_line)
         self.received_eofs = 0
-        
         self.has_to_close = False
 
         previous_stage = local_config["receives_from"]
@@ -34,7 +33,6 @@ class LikesFilter:
                 self.received_eofs += 1
                 print("BORRAR recibi none")
                 if self.received_eofs == self.previous_stage_size:
-                    # self.middleware.send_general(None)
                     self.has_to_close = True
             else:
                 self.middleware.send_general(line)
@@ -55,7 +53,6 @@ class LikesFilter:
         self.middleware.start_received_messages_processing()
 
     def __handle_signal(self, *args): # To prevent double closing 
-        # self.middleware.send_general(None)
         self.has_to_close = True
 
 def main():

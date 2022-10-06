@@ -18,7 +18,6 @@ class TrendingDaysFilter:
         self.trending_days_amounts = {}
         self.trending_days_amounts_aux = {}
         self.received_eofs = 0
-        
         self.has_to_close = False
 
         previous_stage = local_config["receives_from"]
@@ -35,8 +34,6 @@ class TrendingDaysFilter:
             if message == None:
                 self.received_eofs += 1
                 if self.received_eofs == self.previous_stage_size:
-                    # self.middleware.send_general(None)
-                    print("TENDRIA QUE CERRAR")
                     self.has_to_close = True
             else:
                 self.middleware.send_general(message)
@@ -59,7 +56,6 @@ class TrendingDaysFilter:
         if self.has_to_close:
             self.middleware.send_general(None)
             self.middleware.close()
-            # logging.info("Closed MOM")
             print("Closed MOM")
 
     def start_received_messages_processing(self):

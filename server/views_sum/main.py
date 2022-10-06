@@ -17,7 +17,6 @@ class ViewsSum:
         self.middleware = MOM(cluster_type, self.process_received_message)
         self.aggregation_dict = {}
         self.received_eofs = 0
-        
         self.has_to_close = False
 
         previous_stage = local_config["receives_from"]
@@ -32,7 +31,6 @@ class ViewsSum:
                 self.received_eofs += 1
                 if self.received_eofs == self.previous_stage_size:
                     self.middleware.send_general(self.aggregation_dict)
-                    # self.middleware.send_general(None)
                     self.has_to_close = True
         else:
             date: str = line[local_config["indexes"]["trending_date"]]

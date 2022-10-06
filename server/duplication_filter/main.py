@@ -17,7 +17,6 @@ class DuplicationFilter:
         self.middleware = MOM(cluster_type, self.process_received_message)
         self.sent_videos = set()
         self.received_eofs = 0
-        
         self.has_to_close = False
         self.is_processing_message = False
 

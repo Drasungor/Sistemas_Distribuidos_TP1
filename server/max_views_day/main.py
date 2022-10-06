@@ -17,7 +17,6 @@ class MaxViewsDay:
         self.middleware = MOM(cluster_type, self.process_received_message)
         self.max_views_date = (None, 0)
         self.received_eofs = 0
-
         self.has_to_close = False
 
         previous_stage = local_config["receives_from"]
@@ -32,7 +31,6 @@ class MaxViewsDay:
             if self.received_eofs == self.previous_stage_size:
                 final_message_dict = { "type": cluster_type, "max_day": self.max_views_date }
                 self.middleware.send(final_message_dict)
-                # self.middleware.send_general(None)
                 self.has_to_close = True
         else:
             daily_views_dict = received_message

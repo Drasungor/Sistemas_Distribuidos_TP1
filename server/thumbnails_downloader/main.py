@@ -19,7 +19,6 @@ class MaxViewsDay:
         self.middleware = MOM(cluster_type, self.process_received_message)
         self.max_views_date = (None, 0)
         self.received_eofs = 0
-        
         self.has_to_close = False
 
         previous_stage = local_config["receives_from"]
@@ -31,7 +30,6 @@ class MaxViewsDay:
         if method.routing_key == general_config["general_subscription_routing_key"]:
             self.received_eofs += 1
             if self.received_eofs == self.previous_stage_size:
-                # self.middleware.send_general(None)
                 self.has_to_close = True
         else:
             line = json.loads(body)

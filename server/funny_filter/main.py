@@ -16,7 +16,6 @@ class FunnyFilter:
     def __init__(self):
         self.middleware = MOM(cluster_type, self.process_received_line)
         self.received_eofs = 0
-        
         self.has_to_close = False
 
         previous_stage = local_config["receives_from"]

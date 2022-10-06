@@ -18,7 +18,6 @@ class CountriesAmountFilter:
         self.videos_countries = {}
         self.countries_amount = None
         self.received_eofs = 0
-
         self.has_to_close = False
 
         previous_stage = local_config["receives_from"]
