@@ -104,8 +104,6 @@ def send_file_data(skt: socket, files_paths, sigterm_notifier: SigtermNotifier):
                 # print("Envie un batch")
                 lines_accumulator = []
             current_line = get_next_line(csv_reader)
-        # print(f"Cantidad lineas: {len(lines_accumulator)}")
-        # print(f"Batch size: {batch_size}")
         send_cached_data(skt, lines_accumulator, country_prefix, True)
         print("Envie el ultimo batch del archivo")
 
@@ -121,15 +119,9 @@ def send_files_data(files_paths_queue: mp.Queue):
     while should_keep_iterating:
         if not sigterm_notifier.received_sigterm:
             send_file_data(process_socket, read_message, sigterm_notifier)
-            print("BORRAR Envie un archivo")
         read_message = files_paths_queue.get()
         should_keep_iterating = read_message != None
-        # if should_keep_iterating and (not sigterm_notifier.received_sigterm):
-        #     # send_string(process_socket, json.dumps(True))
-        #     send_string(process_socket, json.dumps({ "should_continue_communication": True }))
 
-    # send_string(process_socket, json.dumps(False))
-    print("BORRAR sali del while general del process")
     send_string(process_socket, json.dumps({ "should_continue_communication": False }))
     process_socket.close()
     logging.info("Closed process socket")
@@ -197,17 +189,10 @@ def main():
         files_paths_queue.put(None)
     files_paths_queue.close()
 
-    # received_sigterm = receive_query_response(main_process_connection_socket)
     received_sigterm = receive_query_response(main_process_connection_socket, child_processes)
 
-    # if not received_sigterm:
-    #     main_process_connection_socket.close()
     main_process_connection_socket.close()
     logging.info("Closed main process socket")
-
-    # if received_sigterm:
-    #     for process in child_processes:
-    #         process.terminate()
 
     files_paths_queue.join_thread()
     logging.info("Closed processes queue")
