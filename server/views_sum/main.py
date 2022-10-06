@@ -28,6 +28,7 @@ class ViewsSum:
 
     def process_received_message(self, ch, method, properties, body):
         # self.is_processing_message = True
+        # print("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
         line = json.loads(body)
         if method.routing_key == general_config["general_subscription_routing_key"]:
             if line == None:

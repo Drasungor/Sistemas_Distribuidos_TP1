@@ -1,5 +1,6 @@
 import json
 import pika
+import hashlib
 import os
 
 config_file_path = "/config/config.json"
@@ -109,9 +110,13 @@ class MOM:
                 hashing_attributes = receiving_end[1]
                 hashing_string = self.__get_hashing_key(line, receiving_end[0], hashing_attributes)
 
-                routing_key_number = hash(hashing_string) % receiving_end[2]
+                # routing_key_number = hash(hashing_string) % receiving_end[2]
+                routing_key_number = int(hashlib.sha512(hashing_string.encode()).hexdigest(), 16) % receiving_end[2]
 
                 # BORRAR
+                # if (receiving_end[0] == "views_sum"):
+                #     print(f"string de hasheo: {hashing_string}, route: {routing_key_number}, hashing: {int(hashlib.sha512(hashing_string.encode()).hexdigest(), 16)}, pcs amount: {receiving_end[2]}")
+
                 # if (receiving_end[0] == "views_sum"):
                 #     print(f"BORRAR Atributos de hasheo: {hashing_attributes}, string de hasheo: {hashing_string}, cant pcs receptoras: {receiving_end[2]}, route: {routing_key_number}")
 
@@ -128,6 +133,7 @@ class MOM:
         sent_line = []
         for index in kept_attributes:
             sent_line.append(line[index])
+        # print(f"Sent line: {sent_line}")
         self.send(sent_line)
 
     def send_general(self, message):

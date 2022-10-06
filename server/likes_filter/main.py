@@ -29,13 +29,14 @@ class LikesFilter:
         signal.signal(signal.SIGTERM, self.__handle_signal)
 
     def process_received_line(self, ch, method, properties, body):
-        logging.info("BORRAR Voy a procesar un mensaje")
+        # logging.info("BORRAR Voy a procesar un mensaje")
         # print("BORRAR Voy a procesar un mensaje")
         # self.is_processing_message = True
         line = json.loads(body)
         if method.routing_key == general_config["general_subscription_routing_key"]:
             if line == None:
                 self.received_eofs += 1
+                print("BORRAR recibi none")
                 if self.received_eofs == self.previous_stage_size:
                     self.middleware.send_general(None)
                     # self.middleware.close()
