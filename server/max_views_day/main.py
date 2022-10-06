@@ -39,9 +39,13 @@ class MaxViewsDay:
                 self.has_to_close = True
         else:
             daily_views_dict = received_message
+            # print(f"BORRAR Recibi un diccionario para procesar: {daily_views_dict}")
             for day in daily_views_dict:
                 if daily_views_dict[day] > self.max_views_date[1]:
                     self.max_views_date = (day, daily_views_dict[day])
+
+            print(f"BORRAR Maximo post procesamiento: {self.max_views_date}")
+
 
         if self.has_to_close:
             self.middleware.close()

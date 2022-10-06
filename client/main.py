@@ -131,6 +131,7 @@ def receive_query_response(skt: socket):
         received_message = json.loads(read_string(skt))
         finished = received_message["finished"]
         if not finished:
+            print(f"Received message: {received_message}")
             query_type = received_message["type"]
             value = received_message["value"]
             if not finished:
@@ -139,7 +140,7 @@ def receive_query_response(skt: socket):
                 elif query_type == "second_query":
                     image_bytes = base64.b64decode(value[1])
                     video_id = value[0]
-                    aux_thumbnail_file_ptr = open(f"{second_query_folder}/{video_id}", "w")
+                    aux_thumbnail_file_ptr = open(f"{second_query_folder}/{video_id}", "wb")
                     aux_thumbnail_file_ptr.write(image_bytes)
                     aux_thumbnail_file_ptr.close()
                 elif query_type == "third_query":

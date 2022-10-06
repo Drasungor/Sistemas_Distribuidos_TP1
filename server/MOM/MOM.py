@@ -108,7 +108,13 @@ class MOM:
                 line = message
                 hashing_attributes = receiving_end[1]
                 hashing_string = self.__get_hashing_key(line, receiving_end[0], hashing_attributes)
+
                 routing_key_number = hash(hashing_string) % receiving_end[2]
+
+                # BORRAR
+                # if (receiving_end[0] == "views_sum"):
+                #     print(f"BORRAR Atributos de hasheo: {hashing_attributes}, string de hasheo: {hashing_string}, cant pcs receptoras: {receiving_end[2]}, route: {routing_key_number}")
+
                 self.channel.basic_publish(exchange = receiving_end[0], routing_key = str(routing_key_number), body = message_string)
         else:
             for receiving_end in self.sender:
