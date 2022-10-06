@@ -117,7 +117,7 @@
     "trending_days_filter": {
         "computers_amount": 2,
         "receives_from": "accepter",
-        "min_trending_days": 21,
+        "min_trending_days": 3,
         "hashed_by": ["video_id", "country"],
         "indexes": {
             "video_id": 0,
