@@ -49,7 +49,8 @@ class CountriesAmountFilter:
             video_set.add(country)
             current_countries_amount = len(video_set)
             if (current_countries_amount == self.countries_amount) and (previous_countries_amount != current_countries_amount):
-                self.middleware.send(video_id)
+                # self.middleware.send(video_id)
+                self.middleware.send(line)
 
         if self.has_to_close:
             self.middleware.close()

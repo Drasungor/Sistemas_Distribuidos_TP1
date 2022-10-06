@@ -38,11 +38,13 @@ class MaxViewsDay:
                 self.has_to_close = True
         else:
             line = json.loads(body)
-            video_id = line
-            # video_id = line[local_config["indexes"]["video_id"]]
+            # video_id = line
+            video_id = line[local_config["indexes"]["video_id"]]
+            thumbnail_link = line[local_config["indexes"]["thumbnail_link"]]
             print(f"BORRAR Me llegó la linea {line}")
             # img_data = requests.get(f"https://img.youtube.com/vi/{video_id}/0.jpg").content
-            img_data = requests.get(f"https://img.youtube.com/vi/{video_id}/default.jpg").content
+            # img_data = requests.get(f"https://img.youtube.com/vi/{video_id}/default.jpg").content
+            img_data = requests.get(thumbnail_link).content
             self.middleware.send({ "type": cluster_type, "img_data": (video_id, base64.b64encode(img_data).decode()) })
 
         if self.has_to_close:
@@ -55,6 +57,7 @@ class MaxViewsDay:
 
     def __handle_signal(self, *args): # To prevent double closing 
         self.has_to_close = True
+        print("ASDASDASDHALSKDJHASLDJHALKSJDHASKJDHSAK")
         # if self.is_processing_message:
         #     self.has_to_close = True
         # else:

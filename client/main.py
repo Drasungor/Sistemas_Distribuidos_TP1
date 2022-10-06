@@ -131,7 +131,7 @@ def receive_query_response(skt: socket):
         received_message = json.loads(read_string(skt))
         finished = received_message["finished"]
         if not finished:
-            print(f"Received message: {received_message}")
+            # print(f"Received message: {received_message}")
             query_type = received_message["type"]
             value = received_message["value"]
             if not finished:
