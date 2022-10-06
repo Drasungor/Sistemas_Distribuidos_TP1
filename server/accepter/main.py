@@ -65,7 +65,6 @@ class Accepter():
     def __handle_signal(self, *args): # To prevent double closing 
         self.has_to_close = True
         for process in self.child_processes:
-            print("BORRAR, envie mensaje de terminate")
             process.terminate()
 
 def read_json(skt: socket):
@@ -113,12 +112,9 @@ def handle_connection(connections_queue: mp.Queue, categories):
                         line.append(batch_country_prefix)
                         middleware.send_line(line)
             else:
-                print("should_continue_communication me dio false")
                 should_keep_iterating = False
         read_socket.close()
         read_socket = connections_queue.get()
-        print(f"Lei algo de la cola: {read_socket}")
-    print("Envie none")
     middleware.send_general(None)
     middleware.close()
     logging.info("Closed subprocess MOM")

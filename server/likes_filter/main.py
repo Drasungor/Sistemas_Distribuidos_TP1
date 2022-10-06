@@ -31,7 +31,6 @@ class LikesFilter:
         if method.routing_key == general_config["general_subscription_routing_key"]:
             if line == None:
                 self.received_eofs += 1
-                print("BORRAR recibi none")
                 if self.received_eofs == self.previous_stage_size:
                     self.has_to_close = True
             else:
@@ -42,12 +41,9 @@ class LikesFilter:
                 self.middleware.send_line(line)
 
         if self.has_to_close:
-            print("BOORRAR VOY A CERRAR MOM")
-            logging.info("BOORRAR VOY A CERRAR MOM")
             self.middleware.send_general(None)
             self.middleware.close()
             print("Closed MOM")
-            logging.info("Closed MOM")
 
     def start_received_messages_processing(self):
         self.middleware.start_received_messages_processing()

@@ -99,13 +99,10 @@ def send_file_data(skt: socket, files_paths, sigterm_notifier: SigtermNotifier):
         while (current_line != None) and (not sigterm_notifier.received_sigterm):
             lines_accumulator.append(current_line)
             if len(lines_accumulator) == batch_size:
-                # print("Voy a enviar un batch")
                 send_cached_data(skt, lines_accumulator, country_prefix, False)
-                # print("Envie un batch")
                 lines_accumulator = []
             current_line = get_next_line(csv_reader)
         send_cached_data(skt, lines_accumulator, country_prefix, True)
-        print("Envie el ultimo batch del archivo")
 
 def send_files_data(files_paths_queue: mp.Queue):
     sigterm_notifier = SigtermNotifier()
@@ -137,7 +134,6 @@ def receive_query_response(skt: socket, child_processes):
         received_message = json.loads(read_string(skt))
         finished = received_message["finished"]
         if not finished:
-            print(f"Received message: {received_message}")
             query_type = received_message["type"]
             value = received_message["value"]
             if not finished:
