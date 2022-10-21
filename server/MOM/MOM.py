@@ -18,6 +18,7 @@ class MOM:
         self.sender = None # [(exchange name, [hashing attributes], connections_amount)] | [queue name]
         self.connection_mode = None
         self.queue_tag = None
+        self.previous_stage_size = None
         connections = local_config["connections"]
         connections_names = list(connections.keys())
         connections_names.append("accepter_sender")
@@ -38,8 +39,12 @@ class MOM:
             self.sends_to_publisher = True
 
             # Receiving
+
             # subscribes_to_keywords is already false
-                
+            self.previous_stage_size = 0
+            for previous_stage in config[connection_mode]["receives_from"]:
+                self.previous_stage_size += config[previous_stage]["computers_amount"]
+
         elif  connection_mode in ["funny_filter", "likes_filter", "countries_amount_filter", "trending_days_filter"]:
             # Sending
             self.sends_to_publisher = True
@@ -65,6 +70,13 @@ class MOM:
             raise ValueError(f"Unexpected connection mode {connection_mode}, it should be one of the following: {connections.keys()}")
 
         self.connection_mode = connection_mode
+
+        if self.previous_stage_size == None:
+            previous_stage = config[connection_mode]["receives_from"]
+            if previous_stage == "accepter":
+                self.previous_stage_size = config[previous_stage]["processes_amount"]
+            else:
+                self.previous_stage_size = config[previous_stage]["computers_amount"]
 
         if receives_messages:
             if subscribes_to_keywords:
@@ -116,6 +128,9 @@ class MOM:
         else:
             for receiving_end in self.sender:
                 self.channel.basic_publish(exchange = "", routing_key = receiving_end, body = message_string)
+
+    def get_previous_stage_size(self):
+        return self.previous_stage_size
 
     def send_line(self, line):
         kept_attributes = config[self.connection_mode]["kept_columns"]

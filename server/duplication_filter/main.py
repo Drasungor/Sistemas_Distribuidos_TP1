@@ -20,8 +20,9 @@ class DuplicationFilter:
         self.has_to_close = False
         self.is_processing_message = False
 
-        previous_stage = local_config["receives_from"]
-        self.previous_stage_size = config[previous_stage]["computers_amount"]
+        # previous_stage = local_config["receives_from"]
+        # self.previous_stage_size = config[previous_stage]["computers_amount"]
+        self.previous_stage_size = self.middleware.get_previous_stage_size()
 
         signal.signal(signal.SIGTERM, self.__handle_signal)
 

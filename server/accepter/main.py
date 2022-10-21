@@ -25,9 +25,13 @@ class Accepter():
         self.child_processes = child_processes
         self.has_to_close = False
 
-        self.previous_stage_size = 0
-        for previous_stage in local_config["receives_from"]:
-            self.previous_stage_size += config[previous_stage]["computers_amount"]
+        # self.previous_stage_size = 0
+        # for previous_stage in local_config["receives_from"]:
+        #     self.previous_stage_size += config[previous_stage]["computers_amount"]
+
+        # print(f"BORRAR previous stage size: {self.previous_stage_size}")
+
+        self.previous_stage_size = self.middleware.get_previous_stage_size()
 
         signal.signal(signal.SIGTERM, self.__handle_signal)
 
