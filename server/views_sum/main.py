@@ -18,9 +18,6 @@ class ViewsSum:
         self.aggregation_dict = {}
         self.received_eofs = 0
         self.has_to_close = False
-
-        # previous_stage = local_config["receives_from"]
-        # self.previous_stage_size = config[previous_stage]["computers_amount"]
         self.previous_stage_size = self.middleware.get_previous_stage_size()
 
         signal.signal(signal.SIGTERM, self.__handle_signal)
