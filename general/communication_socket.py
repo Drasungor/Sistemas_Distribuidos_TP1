@@ -11,8 +11,8 @@ class CommunicationSocket():
         else:
             self.skt = skt
 
-    def connect(self):
-        pass
+    def connect(self, connection_address: str, connection_port: int):
+        self.skt.connect((connection_address, connection_port))
 
     def __recv_all(self, bytes_amount: int):
             total_received_bytes = b''
