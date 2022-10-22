@@ -78,14 +78,14 @@ class Accepter():
 def read_json(skt: socket):
     return json.loads(__read_string(skt))
 
-def send_string(skt: socket, data: str):
+def _send_string(skt: socket, data: str):
     encoded_data = data.encode()
     message_length = len(encoded_data)
     skt.sendall(message_length.to_bytes(4, "big"))
     skt.sendall(data.encode())
 
 def send_json(skt: socket, data):
-    send_string(skt, json.dumps(data))
+    _send_string(skt, json.dumps(data))
 
 class SigtermNotifier:
     def __init__(self):
