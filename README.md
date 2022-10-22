@@ -1,5 +1,10 @@
 # Sistemas_Distribuidos_TP1 - Cambiano Agustín - 102291
 
+# Ejecución del programa
+
+Para ejecutar el programa se debe correr el comando `docker-compose up` en la carpeta root del repositorio. El resultado de las queries se almacenará en la carpeta result de client. Los procesos creados para la resolución de las queries se cerrarán solos al terminar el programa, mientras que el proceso de rabbitmq debe ser cerrado manualmente.  
+Para cerrar el programa gracefully se puede utilizar la combinación de teclas `ctrl + c` o el comando `docker-compose down`.
+
 # Client
 
 Se encarga de leer los archivos y enviarlos por socket de a batches, envía también los archivos de categorías de cada país. Utiliza procesos hijos para leer los archivos.
