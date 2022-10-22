@@ -27,7 +27,6 @@ class Accepter():
         self.has_to_close = False
         self.previous_stage_size = self.middleware.get_previous_stage_size()
 
-        # signal.signal(signal.SIGTERM, self.__handle_signal)
         signal.signal(signal.SIGTERM, self.send_close_signal)
 
     def send_general(self, message):
@@ -63,7 +62,6 @@ class Accepter():
                 print(f"Client has already closed the connection")
             else:
                 print(f"Caught unexpected exception while receiving message from server: {str(e)}")
-            # finished = True
             self.send_close_signal()
 
 
@@ -71,10 +69,6 @@ class Accepter():
             self.middleware.close()
             print("Closed MOM")
 
-    # def __handle_signal(self, *args): # To prevent double closing 
-    #     self.has_to_close = True
-    #     for process in self.child_processes:
-    #         process.terminate()
     def send_close_signal(self, *args): # To prevent double closing 
         if not self.has_to_close:
             for process in self.child_processes:
