@@ -5,6 +5,7 @@ import json
 import base64
 import signal
 import logging
+import errno
 
 class ClosedSocket(Exception):
 	pass
@@ -131,8 +132,15 @@ def receive_query_response(skt: socket, child_processes):
     second_query_folder = config["result_files_paths"]["second_query"]
     third_query_ptr = open(config["result_files_paths"]["third_query"], "w")
     while (not finished) and (not sigterm_notifier.received_sigterm):
-        received_message = json.loads(read_string(skt))
-        finished = received_message["finished"]
+        try:
+            received_message = json.loads(read_string(skt))
+            finished = received_message["finished"]
+        except socket.error as e:
+            if e.errno == errno.EPIPE:
+                print(f"Server has already closed the connection")
+            else:
+                print(f"Caught unexpected exception while receiving message from server: {str(e)}")
+            finished = True
         if not finished:
             query_type = received_message["type"]
             value = received_message["value"]

@@ -42,7 +42,7 @@ class TrendingDaysFilter:
                 self.trending_days_amounts_aux[key] = 0
                 self.trending_days_amounts[key] = set()
             self.trending_days_amounts_aux[key] += 1
-            current_video_set = self.trending_days_amounts[key]
+            # current_video_set = self.trending_days_amounts[key]
             previous_trending_days_amount = len(self.trending_days_amounts[key])
             self.trending_days_amounts[key].add(line[local_config["indexes"]["trending_date"]])
             current_trending_days_amount = len(self.trending_days_amounts[key])
