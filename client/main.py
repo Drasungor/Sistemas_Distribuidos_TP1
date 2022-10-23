@@ -6,40 +6,42 @@ import base64
 import signal
 import logging
 import errno
+from communication_socket import CommunicationSocket
 
-class ClosedSocket(Exception):
-	pass
+# class ClosedSocket(Exception):
+# 	pass
 
 config_file_path = "config.json"
 config = None
 with open(config_file_path, "r") as config_file:
     config = json.load(config_file)
 
-def send_string(skt: socket, data: str):
-    encoded_data = data.encode()
-    message_length = len(encoded_data)
-    skt.sendall(message_length.to_bytes(4, "big"))
-    skt.sendall(data.encode())
+# def send_string(skt: socket, data: str):
+#     encoded_data = data.encode()
+#     message_length = len(encoded_data)
+#     skt.sendall(message_length.to_bytes(4, "big"))
+#     skt.sendall(data.encode())
 
 
-def __recv_all(skt: socket, bytes_amount: int):
-		total_received_bytes = b''
-		while (len(total_received_bytes) < bytes_amount):
-			received_bytes = skt.recv(bytes_amount - len(total_received_bytes))
-			if (len(received_bytes) == 0):
-				raise ClosedSocket
-			total_received_bytes += received_bytes
-		return total_received_bytes
+# def __recv_all(skt: socket, bytes_amount: int):
+# 		total_received_bytes = b''
+# 		while (len(total_received_bytes) < bytes_amount):
+# 			received_bytes = skt.recv(bytes_amount - len(total_received_bytes))
+# 			if (len(received_bytes) == 0):
+# 				raise ClosedSocket
+# 			total_received_bytes += received_bytes
+# 		return total_received_bytes
 
-def read_string(skt: socket):
-    string_length = int.from_bytes(__recv_all(skt, 4), "big")
-    read_string = __recv_all(skt, string_length).decode()
-    return read_string
+# def read_string(skt: socket):
+#     string_length = int.from_bytes(__recv_all(skt, 4), "big")
+#     read_string = __recv_all(skt, string_length).decode()
+#     return read_string
 
-def send_number(skt: socket, number: int):
-    skt.sendall(number.to_bytes(4, "big"))
+# def send_number(skt: socket, number: int):
+#     skt.sendall(number.to_bytes(4, "big"))
 
-def send_connection_data(skt: socket, connections_amount: int, files_paths):
+# def send_connection_data(skt: socket, connections_amount: int, files_paths):
+def send_connection_data(skt: CommunicationSocket, connections_amount: int, files_paths):
     categories = {}
     for country_files in files_paths:
         category_file_path: str = country_files["category"]
@@ -47,13 +49,16 @@ def send_connection_data(skt: socket, connections_amount: int, files_paths):
         categories[country_prefix] = get_categories_dict(category_file_path)
 
     data_dict = { "connections_amount": connections_amount, "files_amount": len(files_paths), "categories": categories }
-    send_string(skt, json.dumps(data_dict))
+    # send_string(skt, json.dumps(data_dict))
+    skt.send_json(data_dict)
 
 
-def send_cached_data(skt: socket, data, country_prefix: str, file_finished: bool):
+# def send_cached_data(skt: socket, data, country_prefix: str, file_finished: bool):
+def send_cached_data(skt: CommunicationSocket, data, country_prefix: str, file_finished: bool):
     # dict = { "data": data, "file_finished": file_finished, "country": country_prefix }
     dict = { "data": data, "file_finished": file_finished, "country": country_prefix, "should_continue_communication": True }
-    send_string(skt, json.dumps(dict))
+    # send_string(skt, json.dumps(dict))
+    skt.send_json(dict)
 
 def get_categories_dict(json_path: str):
     categories = {}
@@ -109,9 +114,12 @@ def send_files_data(files_paths_queue: mp.Queue):
     sigterm_notifier = SigtermNotifier()
     connection_address = config["accepter_address"]
     connection_port = config["accepter_port"]
-    process_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    process_socket.connect((connection_address, connection_port))
-    
+    # process_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    # process_socket.connect((connection_address, connection_port))
+    process_socket = CommunicationSocket()
+    process_socket.connect(connection_address, connection_port)
+
+
     read_message = files_paths_queue.get()
     should_keep_iterating = read_message != None
     while should_keep_iterating:
@@ -120,7 +128,8 @@ def send_files_data(files_paths_queue: mp.Queue):
         read_message = files_paths_queue.get()
         should_keep_iterating = read_message != None
 
-    send_string(process_socket, json.dumps({ "should_continue_communication": False }))
+    # send_string(process_socket, json.dumps({ "should_continue_communication": False }))
+    process_socket.send_json({ "should_continue_communication": False })
     process_socket.close()
     logging.info("Closed process socket")
 
@@ -133,7 +142,8 @@ def receive_query_response(skt: socket, child_processes):
     third_query_ptr = open(config["result_files_paths"]["third_query"], "w")
     while (not finished) and (not sigterm_notifier.received_sigterm):
         try:
-            received_message = json.loads(read_string(skt))
+            # received_message = json.loads(read_string(skt))
+            received_message = skt.read_json()
             finished = received_message["finished"]
         except socket.error as e:
             if e.errno == errno.EPIPE:
@@ -175,8 +185,10 @@ def main():
 
     connection_address = config["accepter_address"]
     connection_port = config["accepter_port"]
-    main_process_connection_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    main_process_connection_socket.connect((connection_address, connection_port))
+    # main_process_connection_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    # main_process_connection_socket.connect((connection_address, connection_port))
+    main_process_connection_socket = CommunicationSocket()
+    main_process_connection_socket.connect(connection_address, connection_port)
 
     send_connection_data(main_process_connection_socket, processes_amount, files_paths)
 
