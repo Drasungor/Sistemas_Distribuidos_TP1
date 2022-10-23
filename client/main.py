@@ -13,6 +13,32 @@ config = None
 with open(config_file_path, "r") as config_file:
     config = json.load(config_file)
 
+# class SigtermNotifier:
+#     def __init__(self, processes = None):
+#         self.received_sigterm = False
+#         self.processes = processes
+#         signal.signal(signal.SIGTERM, self.__handle_sigterm)
+
+#     def __handle_sigterm(self, *args):
+#         self.received_sigterm = True
+#         if self.processes != None:
+#             for process in self.processes:
+#                 process.terminate()
+
+# sigterm_notifier = SigtermNotifier()
+
+class SigtermNotifier:
+    def __init__(self, pool = None):
+        self.received_sigterm = False
+        self.pool = pool
+        signal.signal(signal.SIGTERM, self.__handle_sigterm)
+
+    def __handle_sigterm(self, *args):
+        self.received_sigterm = True
+        if self.pool != None:
+            self.pool.close()
+
+
 def send_connection_data(skt: CommunicationSocket, connections_amount: int, files_paths):
     categories = {}
     for country_files in files_paths:
@@ -47,18 +73,6 @@ def get_next_line(csv_reader):
             logging.info("Reading error")
     return current_line
 
-class SigtermNotifier:
-    def __init__(self, processes = None):
-        self.received_sigterm = False
-        self.processes = processes
-        signal.signal(signal.SIGTERM, self.__handle_sigterm)
-
-    def __handle_sigterm(self, *args):
-        self.received_sigterm = True
-        if self.processes != None:
-            for process in self.processes:
-                process.terminate()
-
 def send_file_data(skt: socket, files_paths, sigterm_notifier: SigtermNotifier):
     batch_size = config["batch_size"]
     trending_file_path: str = files_paths["trending"]
@@ -76,26 +90,43 @@ def send_file_data(skt: socket, files_paths, sigterm_notifier: SigtermNotifier):
             current_line = get_next_line(csv_reader)
         send_cached_data(skt, lines_accumulator, country_prefix, True)
 
-def send_files_data(files_paths_queue: mp.Queue):
+# def send_files_data(files_paths_queue: mp.Queue):
+#     sigterm_notifier = SigtermNotifier()
+#     connection_address = config["accepter_address"]
+#     connection_port = config["accepter_port"]
+
+#     read_message = files_paths_queue.get()
+#     should_keep_iterating = read_message != None
+#     while should_keep_iterating:
+#         process_socket = CommunicationSocket()
+#         process_socket.connect(connection_address, connection_port)
+#         if not sigterm_notifier.received_sigterm:
+#             send_file_data(process_socket, read_message, sigterm_notifier)
+#         process_socket.send_json({ "should_continue_communication": False })
+#         process_socket.close()
+#         logging.info("Closed process socket")
+#         read_message = files_paths_queue.get()
+#         should_keep_iterating = read_message != None
+
+def send_files_data(paths):
     sigterm_notifier = SigtermNotifier()
     connection_address = config["accepter_address"]
     connection_port = config["accepter_port"]
+    process_socket = CommunicationSocket()
+    process_socket.connect(connection_address, connection_port)
+    # if not sigterm_notifier.received_sigterm:
+    #     send_file_data(process_socket, files_paths, sigterm_notifier)
+    send_file_data(process_socket, paths, sigterm_notifier)
+    process_socket.send_json({ "should_continue_communication": False })
+    process_socket.close()
+    logging.info("Closed process socket")
 
-    read_message = files_paths_queue.get()
-    should_keep_iterating = read_message != None
-    while should_keep_iterating:
-        process_socket = CommunicationSocket()
-        process_socket.connect(connection_address, connection_port)
-        if not sigterm_notifier.received_sigterm:
-            send_file_data(process_socket, read_message, sigterm_notifier)
-        process_socket.send_json({ "should_continue_communication": False })
-        process_socket.close()
-        logging.info("Closed process socket")
-        read_message = files_paths_queue.get()
-        should_keep_iterating = read_message != None
 
-def receive_query_response(skt: CommunicationSocket, child_processes):
-    sigterm_notifier = SigtermNotifier(child_processes)
+def receive_query_response(skt: CommunicationSocket, pool):
+# def receive_query_response(skt: CommunicationSocket, child_processes):
+# def receive_query_response(skt: CommunicationSocket, sigterm_notifier: SigtermNotifier):
+    # sigterm_notifier = SigtermNotifier(child_processes)
+    sigterm_notifier = SigtermNotifier(pool)
     finished = False
     first_query_ptr = open(config["result_files_paths"]["first_query"], "w")
     second_query_folder = config["result_files_paths"]["second_query"]
@@ -138,7 +169,7 @@ def main():
 
     # Total amount of processes the client is composed of
     processes_amount = min([config["processes_amount"], mp.cpu_count(), len(files_paths)])
-    files_paths_queue = mp.Queue()
+    # files_paths_queue = mp.Queue()
 
 
     connection_address = config["accepter_address"]
@@ -146,29 +177,39 @@ def main():
     main_process_connection_socket = CommunicationSocket()
     main_process_connection_socket.connect(connection_address, connection_port)
 
+
     send_connection_data(main_process_connection_socket, processes_amount, files_paths)
 
-    child_processes: "list[mp.Process]" = []
-    for _ in range(processes_amount):
-        child_processes.append(mp.Process( target = send_files_data, args = [files_paths_queue]))
+    # child_processes: "list[mp.Process]" = []
+    # for _ in range(processes_amount):
+    #     child_processes.append(mp.Process( target = send_files_data, args = [files_paths_queue]))
 
-    for process in child_processes:
-        process.start()
+    # for process in child_processes:
+    #     process.start()
     
-    for paths in files_paths:
-        files_paths_queue.put(paths)
-    for _ in range(len(child_processes)):
-        files_paths_queue.put(None)
+    # for paths in files_paths:
+    #     files_paths_queue.put(paths)
+    # for _ in range(len(child_processes)):
+    #     files_paths_queue.put(None)
 
-    files_paths_queue.close()
-    receive_query_response(main_process_connection_socket, child_processes)
+    process_pool = mp.Pool()
+    process_pool.map_async(send_files_data, files_paths)
+
+    # files_paths_queue.close()
+    # receive_query_response(main_process_connection_socket, child_processes)
+    
+    receive_query_response(main_process_connection_socket, process_pool)
+    # receive_query_response(main_process_connection_socket, sigterm_notifier)
     main_process_connection_socket.close()
     logging.info("Closed main process socket")
 
-    files_paths_queue.join_thread()
-    logging.info("Closed processes queue")
-    for process in child_processes:
-        process.join()
+    process_pool.join()
+
+
+    # files_paths_queue.join_thread()
+    # logging.info("Closed processes queue")
+    # for process in child_processes:
+    #     process.join()
     logging.info("Joined child processes")
 
 if __name__ == "__main__":
