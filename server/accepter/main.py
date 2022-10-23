@@ -4,6 +4,8 @@ import json
 from MOM import MOM
 import signal
 import errno
+from communication_socket import CommunicationSocket
+from accepter_socket import AccepterSocket
 import logging
 
 cluster_type = "accepter"
@@ -19,7 +21,7 @@ class ClosedSocket(Exception):
 	pass
 
 class Accepter():
-    def __init__(self, skt: socket, child_processes):
+    def __init__(self, skt: CommunicationSocket, child_processes):
         self.socket = skt
         self.middleware: MOM = MOM(cluster_type, self.process_received_message)
         self.received_eofs = 0
@@ -42,19 +44,19 @@ class Accepter():
             if response == None:
                 self.received_eofs += 1
                 if self.received_eofs == self.previous_stage_size:
-                    send_json(self.socket, { "finished": True })
+                    self.socket.send_json({ "finished": True })
                     self.has_to_close = True
             else:
                 sender = response["type"]
                 if sender == "duplication_filter":
                     received_tuple = response["tuple"]
-                    send_json(self.socket, { "type": "first_query", "value": received_tuple, "finished": False })
+                    self.socket.send_json({ "type": "first_query", "value": received_tuple, "finished": False })
                 elif sender == "thumbnails_downloader":
                     image_data = response["img_data"]
-                    send_json(self.socket, { "type": "second_query", "value": image_data, "finished": False })
+                    self.socket.send_json({ "type": "second_query", "value": image_data, "finished": False })
                 elif sender == "max_views_day":
                     max_day = response["max_day"]
-                    send_json(self.socket, { "type": "third_query", "value": max_day, "finished": False })
+                    self.socket.send_json({ "type": "third_query", "value": max_day, "finished": False })
                 else:
                     raise ValueError(f"Unexpected sender: {sender}")
         except socket.error as e:
@@ -75,17 +77,17 @@ class Accepter():
                 process.terminate()
         self.has_to_close = True
 
-def read_json(skt: socket):
-    return json.loads(__read_string(skt))
+# def read_json(skt: socket):
+#     return json.loads(__read_string(skt))
 
-def _send_string(skt: socket, data: str):
-    encoded_data = data.encode()
-    message_length = len(encoded_data)
-    skt.sendall(message_length.to_bytes(4, "big"))
-    skt.sendall(data.encode())
+# def _send_string(skt: socket, data: str):
+#     encoded_data = data.encode()
+#     message_length = len(encoded_data)
+#     skt.sendall(message_length.to_bytes(4, "big"))
+#     skt.sendall(data.encode())
 
-def send_json(skt: socket, data):
-    _send_string(skt, json.dumps(data))
+# def send_json(skt: socket, data):
+#     _send_string(skt, json.dumps(data))
 
 class SigtermNotifier:
     def __init__(self):
@@ -104,7 +106,8 @@ def handle_connection(connections_queue: mp.Queue, categories):
         should_keep_iterating = True
 
         while should_keep_iterating and (not sigterm_notifier.received_sigterm):
-            read_data = read_json(read_socket)
+            # read_data = read_json(read_socket)
+            read_data = read_socket.read_json()
             if read_data["should_continue_communication"]:
                 batch_country_prefix = read_data["country"]
                 current_country_categories = categories[batch_country_prefix]
@@ -127,19 +130,19 @@ def handle_connection(connections_queue: mp.Queue, categories):
     middleware.close()
     print("Closed subprocess MOM")
 
-def __recv_all(skt: socket, bytes_amount: int):
-		total_received_bytes = b''
-		while (len(total_received_bytes) < bytes_amount):
-			received_bytes = skt.recv(bytes_amount - len(total_received_bytes))
-			if (len(received_bytes) == 0):
-				raise ClosedSocket
-			total_received_bytes += received_bytes
-		return total_received_bytes
+# def __recv_all(skt: socket, bytes_amount: int):
+# 		total_received_bytes = b''
+# 		while (len(total_received_bytes) < bytes_amount):
+# 			received_bytes = skt.recv(bytes_amount - len(total_received_bytes))
+# 			if (len(received_bytes) == 0):
+# 				raise ClosedSocket
+# 			total_received_bytes += received_bytes
+# 		return total_received_bytes
 
-def __read_string(skt: socket):
-    string_length = int.from_bytes(__recv_all(skt, 4), "big")
-    read_string = __recv_all(skt, string_length).decode()
-    return read_string
+# def __read_string(skt: socket):
+#     string_length = int.from_bytes(__recv_all(skt, 4), "big")
+#     read_string = __recv_all(skt, string_length).decode()
+#     return read_string
 
 
 def main():
@@ -150,13 +153,15 @@ def main():
     # )
     accepter_queue = mp.Queue()
 
-    server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    server_socket.bind(('', local_config["bound_port"]))
-    server_socket.listen(local_config["listen_backlog"])
+    # server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    # server_socket.bind(('', local_config["bound_port"]))
+    # server_socket.listen(local_config["listen_backlog"])
+    server_socket = AccepterSocket(local_config["bound_port"], local_config["listen_backlog"])
 
-    first_connection, _ = server_socket.accept()
+    first_connection = server_socket.accept()
 
-    connections_data = read_json(first_connection)
+    # connections_data = read_json(first_connection)
+    connections_data = first_connection.read_json()
 
     categories = connections_data["categories"]
     incoming_connections = connections_data["connections_amount"]
@@ -176,7 +181,7 @@ def main():
         process.start()
 
     for _ in range(incoming_connections):
-        accepted_socket, _ = server_socket.accept()
+        accepted_socket = server_socket.accept()
         accepter_queue.put(accepted_socket)
     
     for _ in range(len(child_processes)):
@@ -184,7 +189,10 @@ def main():
 
     accepter_object.start_received_messages_processing()
 
+
     first_connection.close()
+    print("Closed first client connection socket")
+    server_socket.close()
     print("Closed accepter socket")
 
     accepter_queue.close()
