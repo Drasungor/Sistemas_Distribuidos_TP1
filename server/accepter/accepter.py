@@ -6,7 +6,6 @@ import signal
 import errno
 from communication_socket import CommunicationSocket, ClosedSocket
 from accepter_socket import AccepterSocket
-import logging
 
 cluster_type = "accepter"
 
@@ -65,4 +64,5 @@ class Accepter():
         if not self.has_to_close:
             for process in self.child_processes:
                 process.terminate()
+                print("Envie terminate a hijo")
         self.has_to_close = True
