@@ -77,18 +77,6 @@ class Accepter():
                 process.terminate()
         self.has_to_close = True
 
-# def read_json(skt: socket):
-#     return json.loads(__read_string(skt))
-
-# def _send_string(skt: socket, data: str):
-#     encoded_data = data.encode()
-#     message_length = len(encoded_data)
-#     skt.sendall(message_length.to_bytes(4, "big"))
-#     skt.sendall(data.encode())
-
-# def send_json(skt: socket, data):
-#     _send_string(skt, json.dumps(data))
-
 class SigtermNotifier:
     def __init__(self):
         self.received_sigterm = False
@@ -106,7 +94,6 @@ def handle_connection(connections_queue: mp.Queue, categories):
         should_keep_iterating = True
 
         while should_keep_iterating and (not sigterm_notifier.received_sigterm):
-            # read_data = read_json(read_socket)
             read_data = read_socket.read_json()
             if read_data["should_continue_communication"]:
                 batch_country_prefix = read_data["country"]
@@ -130,21 +117,6 @@ def handle_connection(connections_queue: mp.Queue, categories):
     middleware.close()
     print("Closed subprocess MOM")
 
-# def __recv_all(skt: socket, bytes_amount: int):
-# 		total_received_bytes = b''
-# 		while (len(total_received_bytes) < bytes_amount):
-# 			received_bytes = skt.recv(bytes_amount - len(total_received_bytes))
-# 			if (len(received_bytes) == 0):
-# 				raise ClosedSocket
-# 			total_received_bytes += received_bytes
-# 		return total_received_bytes
-
-# def __read_string(skt: socket):
-#     string_length = int.from_bytes(__recv_all(skt, 4), "big")
-#     read_string = __recv_all(skt, string_length).decode()
-#     return read_string
-
-
 def main():
     # logging.basicConfig(
     #     format='%(asctime)s %(levelname)-8s %(message)s',
@@ -152,22 +124,13 @@ def main():
     #     datefmt='%Y-%m-%d %H:%M:%S',
     # )
     accepter_queue = mp.Queue()
-
-    # server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    # server_socket.bind(('', local_config["bound_port"]))
-    # server_socket.listen(local_config["listen_backlog"])
     server_socket = AccepterSocket(local_config["bound_port"], local_config["listen_backlog"])
-
     first_connection = server_socket.accept()
-
-    # connections_data = read_json(first_connection)
     connections_data = first_connection.read_json()
-
     categories = connections_data["categories"]
     incoming_connections = connections_data["connections_amount"]
     incoming_files_amount = connections_data["files_amount"]
     processes_amount = local_config["processes_amount"]
-
 
     child_processes: "list[mp.Queue]" = []
     for _ in range(processes_amount):
@@ -188,7 +151,6 @@ def main():
         accepter_queue.put(None)
 
     accepter_object.start_received_messages_processing()
-
 
     first_connection.close()
     print("Closed first client connection socket")
