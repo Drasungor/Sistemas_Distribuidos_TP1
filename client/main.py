@@ -6,7 +6,7 @@ import base64
 import signal
 import logging
 import errno
-from communication_socket import CommunicationSocket
+from communication_socket import CommunicationSocket, ClosedSocket
 
 config_file_path = "config.json"
 config = None
@@ -54,7 +54,6 @@ class SigtermNotifier:
         signal.signal(signal.SIGTERM, self.__handle_sigterm)
 
     def __handle_sigterm(self, *args):
-        logging.info("RECIBI UN SIGTERM")
         self.received_sigterm = True
         if self.processes != None:
             for process in self.processes:

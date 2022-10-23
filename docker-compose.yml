@@ -20,6 +20,7 @@ services:
       - PYTHONUNBUFFERED=1
     volumes:
       - ./server/accepter/main.py:/app/main.py
+      - ./server/accepter/accepter.py:/app/accepter.py
       - ./server/MOM/MOM.py:/app/MOM.py
       - ./general/accepter_socket.py:/app/accepter_socket.py
       - ./general/communication_socket.py:/app/communication_socket.py
