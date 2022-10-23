@@ -22,7 +22,6 @@ class SigtermNotifier:
         signal.signal(signal.SIGTERM, self.__handle_sigterm)
 
     def __handle_sigterm(self, *args):
-        print("LA CONCHA DE TU MADRE HANDLEO EL SIGTERM")
         self.received_sigterm = True
 
 def handle_connection(connections_queue: mp.Queue, categories):
@@ -34,15 +33,7 @@ def handle_connection(connections_queue: mp.Queue, categories):
         should_keep_iterating = True
 
         while should_keep_iterating and (not sigterm_notifier.received_sigterm):
-            
-            if sigterm_notifier.received_sigterm:
-                print("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
-            
             read_data = read_socket.read_json()
-
-            if sigterm_notifier.received_sigterm:
-                print("bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb")
-
             if read_data["should_continue_communication"]:
                 batch_country_prefix = read_data["country"]
                 current_country_categories = categories[batch_country_prefix]

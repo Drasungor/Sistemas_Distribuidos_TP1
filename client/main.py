@@ -76,25 +76,6 @@ def send_file_data(skt: socket, files_paths, sigterm_notifier: SigtermNotifier):
             current_line = get_next_line(csv_reader)
         send_cached_data(skt, lines_accumulator, country_prefix, True)
 
-# def send_files_data(files_paths_queue: mp.Queue):
-#     sigterm_notifier = SigtermNotifier()
-#     connection_address = config["accepter_address"]
-#     connection_port = config["accepter_port"]
-#     process_socket = CommunicationSocket()
-#     process_socket.connect(connection_address, connection_port)
-
-#     read_message = files_paths_queue.get()
-#     should_keep_iterating = read_message != None
-#     while should_keep_iterating:
-#         if not sigterm_notifier.received_sigterm:
-#             send_file_data(process_socket, read_message, sigterm_notifier)
-#         read_message = files_paths_queue.get()
-#         should_keep_iterating = read_message != None
-
-#     process_socket.send_json({ "should_continue_communication": False })
-#     process_socket.close()
-#     logging.info("Closed process socket")
-
 def send_files_data(files_paths_queue: mp.Queue):
     sigterm_notifier = SigtermNotifier()
     connection_address = config["accepter_address"]
