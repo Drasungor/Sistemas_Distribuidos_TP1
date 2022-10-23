@@ -44,3 +44,6 @@ class CommunicationSocket():
 
     def send_json(self, data):
         self._send_string(json.dumps(data))
+        
+    def close(self):
+        self.skt.close()
