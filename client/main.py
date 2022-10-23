@@ -36,7 +36,11 @@ class SigtermNotifier:
     def __handle_sigterm(self, *args):
         self.received_sigterm = True
         if self.pool != None:
-            self.pool.close()
+            logging.debug("BORRAR entre al sigterm en un hijo con if en true")
+            # self.pool.close()
+            self.pool.terminate()
+        else:
+            logging.debug("BORRAR entre al sigterm en un hijo")
 
 
 def send_connection_data(skt: CommunicationSocket, connections_amount: int, files_paths):
@@ -133,7 +137,9 @@ def receive_query_response(skt: CommunicationSocket, pool):
     third_query_ptr = open(config["result_files_paths"]["third_query"], "w")
     while (not finished) and (not sigterm_notifier.received_sigterm):
         try:
+            logging.debug("VOY A LEER DEL SOCKET")
             received_message = skt.read_json()
+            logging.debug("LEI DEL SOCKET")
             finished = received_message["finished"]
         except socket.error as e:
             if e.errno == errno.EPIPE:
@@ -194,6 +200,8 @@ def main():
 
     process_pool = mp.Pool()
     process_pool.map_async(send_files_data, files_paths)
+
+    process_pool.close()
 
     # files_paths_queue.close()
     # receive_query_response(main_process_connection_socket, child_processes)

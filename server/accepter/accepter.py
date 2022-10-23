@@ -10,15 +10,36 @@ from accepter_socket import AccepterSocket
 cluster_type = "accepter"
 
 class Accepter():
-    def __init__(self, skt: CommunicationSocket, child_processes):
+    # def __init__(self, skt: CommunicationSocket, child_processes, accepter_skt: AccepterSocket):
+    #     self.socket = skt
+    #     self.middleware: MOM = MOM(cluster_type, self.process_received_message)
+    #     self.received_eofs = 0
+    #     self.child_processes = child_processes
+    #     self.accepter_skt = accepter_skt
+    #     self.has_to_close = False
+    #     self.previous_stage_size = self.middleware.get_previous_stage_size()
+
+    #     signal.signal(signal.SIGTERM, self.send_close_signal)
+
+    # def __init__(self, skt: CommunicationSocket, child_processes):
+    #     self.socket = skt
+    #     self.middleware: MOM = MOM(cluster_type, self.process_received_message)
+    #     self.received_eofs = 0
+    #     self.child_processes = child_processes
+    #     self.has_to_close = False
+    #     self.previous_stage_size = self.middleware.get_previous_stage_size()
+
+    #     signal.signal(signal.SIGTERM, self.send_close_signal)
+
+    def __init__(self, skt: CommunicationSocket):
         self.socket = skt
         self.middleware: MOM = MOM(cluster_type, self.process_received_message)
         self.received_eofs = 0
-        self.child_processes = child_processes
         self.has_to_close = False
         self.previous_stage_size = self.middleware.get_previous_stage_size()
 
         signal.signal(signal.SIGTERM, self.send_close_signal)
+
 
     def send_general(self, message):
         self.middleware.send_general(message)
@@ -60,8 +81,10 @@ class Accepter():
             self.middleware.close()
             print("Closed MOM")
 
+    # def send_close_signal(self, *args): # To prevent double closing 
+    #     if not self.has_to_close:
+    #         for process in self.child_processes:
+    #             process.terminate()
+    #     self.has_to_close = True
     def send_close_signal(self, *args): # To prevent double closing 
-        if not self.has_to_close:
-            for process in self.child_processes:
-                process.terminate()
         self.has_to_close = True
