@@ -24,6 +24,7 @@ services:
       - ./server/MOM/MOM.py:/app/MOM.py
       - ./general/accepter_socket.py:/app/accepter_socket.py
       - ./general/communication_socket.py:/app/communication_socket.py
+      - ./general/sigterm_notifier.py:/app/sigterm_notifier.py
       - ./server/config.json:/config/config.json
     expose:
       - "8080"
@@ -276,6 +277,7 @@ services:
       - ./client/config.json:/app/config.json
       - ./client/data:/app/data
       - ./general/communication_socket.py:/app/communication_socket.py
+      - ./general/sigterm_notifier.py:/app/sigterm_notifier.py
 
     command: python /app/main.py
     working_dir: /app

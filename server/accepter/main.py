@@ -2,9 +2,10 @@ import multiprocessing as mp
 import json
 from MOM import MOM
 import signal
-from accepter_socket import AccepterSocket
 import logging
 from accepter import Accepter
+from accepter_socket import AccepterSocket
+from sigterm_notifier import SigtermNotifier
 
 cluster_type = "accepter"
 
@@ -14,15 +15,6 @@ with open(config_file_path, "r") as config_file:
     config = json.load(open(config_file_path, "r"))
 general_config = config["general"]
 local_config = config[cluster_type]
-
-
-class SigtermNotifier:
-    def __init__(self):
-        self.received_sigterm = False
-        signal.signal(signal.SIGTERM, self.__handle_sigterm)
-
-    def __handle_sigterm(self, *args):
-        self.received_sigterm = True
 
 def handle_connection(connections_queue: mp.Queue, categories):
     middleware = MOM(f"{cluster_type}_sender", None)

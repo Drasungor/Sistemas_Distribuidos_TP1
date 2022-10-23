@@ -3,10 +3,10 @@ import socket
 import multiprocessing as mp
 import json
 import base64
-import signal
 import logging
 import errno
 from communication_socket import CommunicationSocket, ClosedSocket
+from sigterm_notifier import SigtermNotifier
 
 config_file_path = "config.json"
 config = None
@@ -46,18 +46,6 @@ def get_next_line(csv_reader):
         except csv.Error:
             logging.info("Reading error")
     return current_line
-
-class SigtermNotifier:
-    def __init__(self, processes = None):
-        self.received_sigterm = False
-        self.processes = processes
-        signal.signal(signal.SIGTERM, self.__handle_sigterm)
-
-    def __handle_sigterm(self, *args):
-        self.received_sigterm = True
-        if self.processes != None:
-            for process in self.processes:
-                process.terminate()
 
 def send_file_data(skt: socket, files_paths, sigterm_notifier: SigtermNotifier):
     batch_size = config["batch_size"]
