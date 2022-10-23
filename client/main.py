@@ -129,7 +129,6 @@ def receive_query_response(skt: socket, child_processes):
                     third_query_ptr.write(f"{value}\n")
     first_query_ptr.close()
     third_query_ptr.close()
-    return sigterm_notifier.received_sigterm
 
 
 def main():
@@ -165,7 +164,7 @@ def main():
         files_paths_queue.put(None)
     files_paths_queue.close()
 
-    received_sigterm = receive_query_response(main_process_connection_socket, child_processes)
+    receive_query_response(main_process_connection_socket, child_processes)
 
     main_process_connection_socket.close()
     logging.info("Closed main process socket")
