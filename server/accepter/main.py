@@ -86,7 +86,7 @@ def handle_connection(connections_queue: mp.Queue, categories):
     print("Closed subprocess MOM")
 
 # def accept_connections(connections_queue: mp.Queue, accepter: AccepterSocket, incoming_files_amount: int, connections_processes: int):
-def accept_connections(accepter: AccepterSocket, incoming_files_amount: int):
+def accept_connections(accepter: AccepterSocket, incoming_files_amount: int, categories):
     processes_amount = local_config["processes_amount"]
     accepter_queue = mp.Queue()
     child_processes: "list[mp.Queue]" = []
@@ -137,14 +137,17 @@ def main():
     incoming_files_amount = connections_data["files_amount"]
     # processes_amount = local_config["processes_amount"]
 
+    print("LEI COSAS")
+
     # child_processes: "list[mp.Queue]" = []
     # for _ in range(processes_amount):
     #     new_process = mp.Process( target = handle_connection, args = [accepter_queue, categories])
     #     child_processes.append(new_process)
     # child_processes.append(mp.Process( target = accept_connections, args = [accepter_queue, server_socket, incoming_files_amount, len(child_processes)]))
-    accepter_process = mp.Process( target = accept_connections, args = [server_socket, incoming_files_amount])
-
-    accepter_object = Accepter(first_connection)
+    accepter_process = mp.Process( target = accept_connections, args = [server_socket, incoming_files_amount, categories])
+    accepter_process.start()
+    accepter_object = Accepter(first_connection, accepter_process)
+    # accepter_object = Accepter(first_connection)
     # accepter_object = Accepter(first_connection, child_processes)
     # accepter_object = Accepter(first_connection, child_processes, server_socket)
     accepter_object.send_general(incoming_files_amount) # Send the amount of countries

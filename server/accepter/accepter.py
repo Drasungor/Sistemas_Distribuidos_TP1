@@ -31,10 +31,20 @@ class Accepter():
 
     #     signal.signal(signal.SIGTERM, self.send_close_signal)
 
-    def __init__(self, skt: CommunicationSocket):
+    # def __init__(self, skt: CommunicationSocket):
+    #     self.socket = skt
+    #     self.middleware: MOM = MOM(cluster_type, self.process_received_message)
+    #     self.received_eofs = 0
+    #     self.has_to_close = False
+    #     self.previous_stage_size = self.middleware.get_previous_stage_size()
+
+    #     signal.signal(signal.SIGTERM, self.send_close_signal)
+
+    def __init__(self, skt: CommunicationSocket, accepter_process):
         self.socket = skt
         self.middleware: MOM = MOM(cluster_type, self.process_received_message)
         self.received_eofs = 0
+        self.accepter_process = accepter_process
         self.has_to_close = False
         self.previous_stage_size = self.middleware.get_previous_stage_size()
 
@@ -86,5 +96,11 @@ class Accepter():
     #         for process in self.child_processes:
     #             process.terminate()
     #     self.has_to_close = True
+
+    # def send_close_signal(self, *args): # To prevent double closing 
+    #     self.has_to_close = True
+
     def send_close_signal(self, *args): # To prevent double closing 
+        if not self.has_to_close:
+            self.accepter_process.terminate()
         self.has_to_close = True
