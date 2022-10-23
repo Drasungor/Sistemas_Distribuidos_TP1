@@ -61,7 +61,6 @@ def handle_connection(connections_queue: mp.Queue, categories):
                 should_keep_iterating = False
         read_socket.close()
         read_socket = connections_queue.get()
-        print("BORRAR LEI UN SOCKET DE LA QUEUE")
     middleware.send_general(None)
     middleware.close()
     print("Closed subprocess MOM")

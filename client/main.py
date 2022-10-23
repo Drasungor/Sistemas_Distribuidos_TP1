@@ -56,29 +56,8 @@ class SigtermNotifier:
     def __handle_sigterm(self, *args):
         self.received_sigterm = True
         if self.processes != None:
-            logging.debug("ESTOY HANDLEANDO SIGTERM")
             for process in self.processes:
                 process.terminate()
-            logging.debug("MANDE TERMINATE")
-
-    # def __init__(self, additional_data = None):
-    #     self.received_sigterm = False
-    #     self.processes = None
-    #     self.socket = None
-    #     if additional_data != None:
-    #         self.processes = additional_data[0]
-    #         self.socket = additional_data[1]
-    #     signal.signal(signal.SIGTERM, self.__handle_sigterm)
-
-    # def __handle_sigterm(self, *args):
-    #     self.received_sigterm = True
-    #     if self.processes != None:
-    #         logging.debug("ESTOY HANDLEANDO SIGTERM")
-    #         for process in self.processes:
-    #             process.terminate()
-    #         logging.debug("MANDE TERMINATE")
-    #     if self.socket != None:
-    #         self.socket.close()
 
 def send_file_data(skt: socket, files_paths, sigterm_notifier: SigtermNotifier):
     batch_size = config["batch_size"]
@@ -127,48 +106,27 @@ def send_files_data(files_paths_queue: mp.Queue):
         process_socket = CommunicationSocket()
         process_socket.connect(connection_address, connection_port)
         if not sigterm_notifier.received_sigterm:
-            
-            logging.debug("Antes de send_file_data")
-
             send_file_data(process_socket, read_message, sigterm_notifier)
-
-            logging.debug("Despues de send_file_data")
-
         process_socket.send_json({ "should_continue_communication": False })
         process_socket.close()
         logging.info("Closed process socket")
         read_message = files_paths_queue.get()
         should_keep_iterating = read_message != None
-    logging.debug("TERMINE send_files_data")
-
 
 def receive_query_response(skt: CommunicationSocket, child_processes):
     sigterm_notifier = SigtermNotifier(child_processes)
-    # sigterm_notifier = SigtermNotifier((child_processes, skt))
-    
-    logging.debug(f"SETUPEE EL SIGTERM NOTIFIER")
-
     finished = False
     first_query_ptr = open(config["result_files_paths"]["first_query"], "w")
     second_query_folder = config["result_files_paths"]["second_query"]
     third_query_ptr = open(config["result_files_paths"]["third_query"], "w")
     while (not finished) and (not sigterm_notifier.received_sigterm):
-
-        logging.debug("AAAAAAAAAAAAAAA")
-
         try:
             received_message = skt.read_json()
-            
-            logging.debug("BBBBBBBBBBBBBBBBBB")
-            
             finished = received_message["finished"]
         except socket.error as e:
-            logging.debug("EXCEPTION")
             if e.errno == errno.EPIPE:
-                # print(f"Server has already closed the connection")
                 logging.info(f"Server has already closed the connection")
             else:
-                # print(f"Caught unexpected exception while receiving message from server: {str(e)}")
                 logging.info(f"Caught unexpected exception while receiving message from server: {str(e)}")
             finished = True
         if not finished:
@@ -187,8 +145,6 @@ def receive_query_response(skt: CommunicationSocket, child_processes):
                     third_query_ptr.write(f"{value}\n")
     first_query_ptr.close()
     third_query_ptr.close()
-    logging.debug("TERMINE receive_query_response")
-    # return sigterm_notifier.received_sigterm
     
 
 def main():
@@ -223,19 +179,9 @@ def main():
     for _ in range(len(child_processes)):
         files_paths_queue.put(None)
 
-    logging.debug("VOY A CERRAR files_paths_queue")
     files_paths_queue.close()
-
-    logging.debug("ANTES DE receive_query_response")
-
     receive_query_response(main_process_connection_socket, child_processes)
-    # received_sigterm = receive_query_response(main_process_connection_socket, child_processes)
-
-    logging.debug("DESPUES DE receive_query_response")
-
     main_process_connection_socket.close()
-    # if not received_sigterm:
-    #     main_process_connection_socket.close()
     logging.info("Closed main process socket")
 
     files_paths_queue.join_thread()
