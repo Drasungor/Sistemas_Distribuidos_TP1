@@ -43,10 +43,10 @@ class AnotherSigtermNotifier:
         self.processes = processes
         self.skt = skt
         signal.signal(signal.SIGTERM, self.__handle_sigterm)
-        print("BORRAR LA RE CALCADISIMA CONCHA DE TU HERMANA EN EL CONSTRUCTOR")
+        print("BORRAR EN EL CONSTRUCTOR")
 
     def __handle_sigterm(self, *args):
-        print("BORRAR LA RE CALCADISIMA CONCHA DE TU HERMANA")
+        print("BORRAR LLAME SIGTERM DE AnotherSigtermNotifier")
         self.received_sigterm = True
         if self.skt != None:
             self.skt.close()
