@@ -49,7 +49,7 @@ class Accepter():
         self.previous_stage_size = self.middleware.get_previous_stage_size()
 
         signal.signal(signal.SIGTERM, self.send_close_signal)
-
+        print("SETUPEE SIGTERM HANDLER")
 
     def send_general(self, message):
         self.middleware.send_general(message)
@@ -62,8 +62,10 @@ class Accepter():
 
         try:
             if response == None:
+                print("RECIBI UN NONE")
                 self.received_eofs += 1
                 if self.received_eofs == self.previous_stage_size:
+                    print("VOY A ENVIAR FINISHED")
                     self.socket.send_json({ "finished": True })
                     self.has_to_close = True
             else:
@@ -101,6 +103,8 @@ class Accepter():
     #     self.has_to_close = True
 
     def send_close_signal(self, *args): # To prevent double closing 
+        print("BORRAR CLASE ACCEPTER SIGTERM")
         if not self.has_to_close:
             self.accepter_process.terminate()
+            print("BORRAR Envie sigterm al accepter process")
         self.has_to_close = True

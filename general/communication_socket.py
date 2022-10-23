@@ -46,4 +46,5 @@ class CommunicationSocket():
         self._send_string(json.dumps(data))
         
     def close(self):
+        self.skt.shutdown(socket.SHUT_RDWR)
         self.skt.close()

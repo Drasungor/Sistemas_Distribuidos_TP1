@@ -27,20 +27,40 @@ with open(config_file_path, "r") as config_file:
 
 # sigterm_notifier = SigtermNotifier()
 
+# class SigtermNotifier:
+#     def __init__(self, pool = None):
+#         self.received_sigterm = False
+#         self.pool = pool
+#         signal.signal(signal.SIGTERM, self.__handle_sigterm)
+
+#     def __handle_sigterm(self, *args):
+#         self.received_sigterm = True
+#         if self.pool != None:
+#             # logging.debug("BORRAR entre al sigterm en un hijo con if en true")
+#             # self.pool.close()
+#             self.pool.terminate()
+#         # else:
+#         #     logging.debug("BORRAR entre al sigterm en un hijo")
+
 class SigtermNotifier:
-    def __init__(self, pool = None):
+    def __init__(self, pool = None, skt = None):
         self.received_sigterm = False
         self.pool = pool
+        self.skt = skt
         signal.signal(signal.SIGTERM, self.__handle_sigterm)
 
     def __handle_sigterm(self, *args):
         self.received_sigterm = True
         if self.pool != None:
-            logging.debug("BORRAR entre al sigterm en un hijo con if en true")
+            # logging.debug("BORRAR entre al sigterm en un hijo con if en true")
             # self.pool.close()
             self.pool.terminate()
-        else:
-            logging.debug("BORRAR entre al sigterm en un hijo")
+        if self.skt != None:
+            self.skt.close()
+            logging.debug("ESTOY EN SIGTERM EL MAIN PROCESS LA PUTA MADRE")
+        # else:
+        #     logging.debug("BORRAR entre al sigterm en un hijo")
+
 
 
 def send_connection_data(skt: CommunicationSocket, connections_amount: int, files_paths):
@@ -130,7 +150,8 @@ def receive_query_response(skt: CommunicationSocket, pool):
 # def receive_query_response(skt: CommunicationSocket, child_processes):
 # def receive_query_response(skt: CommunicationSocket, sigterm_notifier: SigtermNotifier):
     # sigterm_notifier = SigtermNotifier(child_processes)
-    sigterm_notifier = SigtermNotifier(pool)
+    # sigterm_notifier = SigtermNotifier(pool)
+    sigterm_notifier = SigtermNotifier(pool, skt)
     finished = False
     first_query_ptr = open(config["result_files_paths"]["first_query"], "w")
     second_query_folder = config["result_files_paths"]["second_query"]
@@ -201,7 +222,6 @@ def main():
     process_pool = mp.Pool()
     process_pool.map_async(send_files_data, files_paths)
 
-    process_pool.close()
 
     # files_paths_queue.close()
     # receive_query_response(main_process_connection_socket, child_processes)
@@ -211,8 +231,12 @@ def main():
     main_process_connection_socket.close()
     logging.info("Closed main process socket")
 
+    logging.debug("VOY A JOINEAR")
+
+    process_pool.close()
     process_pool.join()
 
+    logging.debug("JOINEE")
 
     # files_paths_queue.join_thread()
     # logging.info("Closed processes queue")

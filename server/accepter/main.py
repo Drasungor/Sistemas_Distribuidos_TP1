@@ -31,10 +31,11 @@ class SigtermNotifier:
         signal.signal(signal.SIGTERM, self.__handle_sigterm)
 
     def __handle_sigterm(self, *args):
+        print("RECIBI SIGTERM EN UN PROCESO HIJO")
         self.received_sigterm = True
         if self.skt != None:
             self.skt.close()
-            print("Closed accepter socket")
+            print("Closed accepter socket asdasdasdasdasdasd")
 
 class AnotherSigtermNotifier:
     def __init__(self, skt = None, processes = None):
@@ -42,8 +43,10 @@ class AnotherSigtermNotifier:
         self.processes = processes
         self.skt = skt
         signal.signal(signal.SIGTERM, self.__handle_sigterm)
+        print("BORRAR LA RE CALCADISIMA CONCHA DE TU HERMANA EN EL CONSTRUCTOR")
 
     def __handle_sigterm(self, *args):
+        print("BORRAR LA RE CALCADISIMA CONCHA DE TU HERMANA")
         self.received_sigterm = True
         if self.skt != None:
             self.skt.close()
@@ -79,7 +82,7 @@ def handle_connection(connections_queue: mp.Queue, categories):
             else:
                 should_keep_iterating = False
         read_socket.close()
-        print(f"VOY A LEER DE LA QUEUE")
+        # print(f"VOY A LEER DE LA QUEUE")
         read_socket = connections_queue.get()
     middleware.send_general(None)
     middleware.close()
@@ -97,13 +100,14 @@ def accept_connections(accepter: AccepterSocket, incoming_files_amount: int, cat
     for process in child_processes:
         process.start()
 
+    notifier = AnotherSigtermNotifier(accepter, child_processes)
+
     # print(f"INCOMING FILES AMOUNT: {incoming_files_amount}")
     for _ in range(incoming_files_amount):
         accepted_socket = accepter.accept()
         # print(f"ACEPTE UNA CONEXION {accepted_socket}")
         accepter_queue.put(accepted_socket)
     
-    notifier = AnotherSigtermNotifier(accepter, child_processes)
 
     # for _ in range(len(child_processes)):
     for _ in range(processes_amount):
@@ -145,8 +149,8 @@ def main():
     #     child_processes.append(new_process)
     # child_processes.append(mp.Process( target = accept_connections, args = [accepter_queue, server_socket, incoming_files_amount, len(child_processes)]))
     accepter_process = mp.Process( target = accept_connections, args = [server_socket, incoming_files_amount, categories])
-    accepter_process.start()
     accepter_object = Accepter(first_connection, accepter_process)
+    accepter_process.start()
     # accepter_object = Accepter(first_connection)
     # accepter_object = Accepter(first_connection, child_processes)
     # accepter_object = Accepter(first_connection, child_processes, server_socket)
@@ -163,7 +167,7 @@ def main():
     # for _ in range(len(child_processes)):
     #     accepter_queue.put(None)
 
-
+    print("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
 
     accepter_object.start_received_messages_processing()
 
@@ -178,6 +182,8 @@ def main():
     # for i in range(len(child_processes)):
     #     child_processes[i].join()
     # print("Joined child processes")
+    accepter_process.join()
+    print("Joined accepter processes")
 
 if __name__ == "__main__":
     main()
