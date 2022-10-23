@@ -21,6 +21,8 @@ services:
     volumes:
       - ./server/accepter/main.py:/app/main.py
       - ./server/MOM/MOM.py:/app/MOM.py
+      - ./general/accepter_socket.py:/app/accepter_socket.py
+      - ./general/communication_socket.py:/app/communication_socket.py
       - ./server/config.json:/config/config.json
     expose:
       - "8080"
@@ -267,7 +269,13 @@ services:
     environment:
       - PYTHONUNBUFFERED=1
     volumes:
-      - ./client:/app
+      # - ./client:/app
+      - ./client/main.py:/app/main.py
+      - ./client/result:/app/result
+      - ./client/config.json:/app/config.json
+      - ./client/data:/app/data
+      - ./general/communication_socket.py:/app/communication_socket.py
+
     command: python /app/main.py
     working_dir: /app
     depends_on:
