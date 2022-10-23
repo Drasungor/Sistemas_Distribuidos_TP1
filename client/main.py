@@ -71,11 +71,17 @@ def send_files_data(files_paths_queue: mp.Queue):
 
     read_message = files_paths_queue.get()
     should_keep_iterating = read_message != None
+    process_socket = None
+    encountered_error = False
     while should_keep_iterating:
-        process_socket = CommunicationSocket()
-        process_socket.connect(connection_address, connection_port)
-        if not sigterm_notifier.received_sigterm:
-            send_file_data(process_socket, read_message, sigterm_notifier)
+        try:
+            process_socket = CommunicationSocket()
+            process_socket.connect(connection_address, connection_port)
+            if (not sigterm_notifier.received_sigterm) and (not encountered_error):
+                send_file_data(process_socket, read_message, sigterm_notifier)
+        except Exception as e:
+            encountered_error = True
+            logging.info(f"Unexpected error in file communication: {str(e)}")
         process_socket.send_json({ "should_continue_communication": False })
         process_socket.close()
         logging.info("Closed process socket")
@@ -126,7 +132,6 @@ def main():
 
     # Total amount of processes the client is composed of
     processes_amount = min([config["processes_amount"], mp.cpu_count(), len(files_paths)])
-    files_paths_queue = mp.Queue()
 
 
     connection_address = config["accepter_address"]
@@ -134,30 +139,37 @@ def main():
     main_process_connection_socket = CommunicationSocket()
     main_process_connection_socket.connect(connection_address, connection_port)
 
-    send_connection_data(main_process_connection_socket, processes_amount, files_paths)
+    had_communication_issue = False
+    try:
+        send_connection_data(main_process_connection_socket, processes_amount, files_paths)
+    except Exception as e:
+        had_communication_issue = True
+        logging.info(f"Cought unexpected exception while talking to server: {str(e)}")
 
-    child_processes: "list[mp.Process]" = []
-    for _ in range(processes_amount):
-        child_processes.append(mp.Process( target = send_files_data, args = [files_paths_queue]))
+    if not had_communication_issue:
+        files_paths_queue = mp.Queue()
+        child_processes: "list[mp.Process]" = []
+        for _ in range(processes_amount):
+            child_processes.append(mp.Process( target = send_files_data, args = [files_paths_queue]))
 
-    for process in child_processes:
-        process.start()
-    
-    for paths in files_paths:
-        files_paths_queue.put(paths)
-    for _ in range(len(child_processes)):
-        files_paths_queue.put(None)
+        for process in child_processes:
+            process.start()
+        
+        for paths in files_paths:
+            files_paths_queue.put(paths)
+        for _ in range(len(child_processes)):
+            files_paths_queue.put(None)
 
-    files_paths_queue.close()
-    receive_query_response(main_process_connection_socket, child_processes)
+        files_paths_queue.close()
+        receive_query_response(main_process_connection_socket, child_processes)
+
+        files_paths_queue.join_thread()
+        logging.info("Closed processes queue")
+        for process in child_processes:
+            process.join()
+        logging.info("Joined child processes")
     main_process_connection_socket.close()
     logging.info("Closed main process socket")
-
-    files_paths_queue.join_thread()
-    logging.info("Closed processes queue")
-    for process in child_processes:
-        process.join()
-    logging.info("Joined child processes")
 
 if __name__ == "__main__":
     main()
