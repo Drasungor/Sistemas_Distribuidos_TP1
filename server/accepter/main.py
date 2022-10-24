@@ -1,7 +1,6 @@
 import multiprocessing as mp
 import json
 from MOM import MOM
-import signal
 import logging
 from accepter import Accepter
 from accepter_socket import AccepterSocket
@@ -59,7 +58,6 @@ def main():
     first_connection = server_socket.accept()
     connections_data = first_connection.read_json()
     categories = connections_data["categories"]
-    incoming_connections = connections_data["connections_amount"]
     incoming_files_amount = connections_data["files_amount"]
     processes_amount = local_config["processes_amount"]
 
@@ -74,7 +72,6 @@ def main():
     for process in child_processes:
         process.start()
 
-    # for _ in range(incoming_connections):
     for _ in range(incoming_files_amount):
         accepted_socket = server_socket.accept()
         accepter_queue.put(accepted_socket)
