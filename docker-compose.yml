@@ -273,6 +273,7 @@ services:
     volumes:
       # - ./client:/app
       - ./client/main.py:/app/main.py
+      - ./client/files_sender.py:/app/files_sender.py
       - ./client/result:/app/result
       - ./client/config.json:/app/config.json
       - ./client/data:/app/data
